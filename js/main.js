@@ -38,12 +38,13 @@
   function applySettings(settings) {
     document.title = `${settings.brandName || "BÜKÜ ART"} | Çini & Tezhip Workshop`;
 
-    document.querySelectorAll("#brand-name, #footer-brand").forEach((el) => {
+    document.querySelectorAll("#brand-name, #footer-brand, #footer-brand-name").forEach((el) => {
       el.textContent = settings.brandName || "BÜKÜ ART";
     });
 
-    const tagline = $("#hero-tagline");
-    if (tagline) tagline.textContent = settings.tagline || "";
+    document.querySelectorAll("#hero-tagline, #footer-tagline-text").forEach((el) => {
+      el.textContent = settings.tagline || "";
+    });
 
     document.querySelectorAll("#hero-about, #about-text").forEach((el) => {
       el.textContent = settings.about || "";
@@ -54,7 +55,7 @@
 
     const igHandle = settings.instagram || "";
     const igUrl = igHandle ? `https://instagram.com/${igHandle.replace(/^@/, "")}` : "#";
-    document.querySelectorAll("#instagram-link, #contact-instagram, #gallery-instagram-link").forEach((el) => {
+    document.querySelectorAll("#instagram-link, #contact-instagram, #gallery-instagram-link, #footer-instagram").forEach((el) => {
       el.href = igUrl;
     });
     const igHandleLabel = $("#gallery-instagram-handle");
@@ -62,15 +63,17 @@
 
     const defaultMessage = `Merhaba, ${settings.brandName || "atölyeniz"} hakkında bilgi almak istiyorum.`;
     const generalWaLink = waLink(settings.whatsapp, defaultMessage);
-    document.querySelectorAll("#header-whatsapp, #hero-whatsapp, #contact-whatsapp, #floating-whatsapp").forEach((el) => {
+    document.querySelectorAll("#header-whatsapp, #hero-whatsapp, #contact-whatsapp, #floating-whatsapp, #footer-whatsapp").forEach((el) => {
       el.href = generalWaLink;
     });
 
-    const loc = $("#contact-location");
-    if (loc) loc.textContent = settings.location || "";
+    document.querySelectorAll("#contact-location, #footer-location").forEach((el) => {
+      el.textContent = settings.location || "";
+    });
 
-    const email = $("#contact-email");
-    if (email) email.textContent = settings.email || "";
+    document.querySelectorAll("#contact-email, #footer-email").forEach((el) => {
+      el.textContent = settings.email || "";
+    });
 
     const heroBtn = document.querySelector(".hero-actions .btn-gold");
     if (heroBtn && settings.heroButtonText) heroBtn.textContent = settings.heroButtonText;
