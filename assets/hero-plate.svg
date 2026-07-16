@@ -1,7 +1,7 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 480 480" width="480" height="480" role="img" aria-label="Çini tabak motifi">
-  <circle cx="240" cy="240" r="230" fill="#0c1119" stroke="#c9971f" stroke-width="3"/>
-  <circle cx="240" cy="240" r="205" fill="none" stroke="#2a5f8f" stroke-width="2"/>
-  <circle cx="240" cy="240" r="190" fill="none" stroke="#c9971f" stroke-width="1"/>
+  <circle cx="240" cy="240" r="230" fill="#fffdf8" stroke="#b8892f" stroke-width="3"/>
+  <circle cx="240" cy="240" r="205" fill="none" stroke="#3f7cb0" stroke-width="2"/>
+  <circle cx="240" cy="240" r="190" fill="none" stroke="#b8892f" stroke-width="1"/>
 
   <g stroke="#3f7cb0" stroke-width="1.6" fill="none" opacity="0.9">
     <g id="petal-ring">
@@ -24,10 +24,10 @@
     <use href="#petal-ring" transform="rotate(0 240 240)"/>
   </g>
 
-  <circle cx="240" cy="240" r="70" fill="none" stroke="#c9971f" stroke-width="2"/>
-  <circle cx="240" cy="240" r="58" fill="#0f1420" stroke="#3f7cb0" stroke-width="1.4"/>
+  <circle cx="240" cy="240" r="70" fill="none" stroke="#b8892f" stroke-width="2"/>
+  <circle cx="240" cy="240" r="58" fill="#f1e7d3" stroke="#3f7cb0" stroke-width="1.4"/>
 
-  <g fill="#c9971f">
+  <g fill="#b8892f">
     <circle cx="240" cy="240" r="9"/>
     <path d="M240 195 c10 12 10 22 0 33 c-10 -11 -10 -21 0 -33 Z" opacity="0.9"/>
     <path d="M240 285 c10 -12 10 -22 0 -33 c-10 11 -10 21 0 33 Z" opacity="0.9"/>

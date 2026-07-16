@@ -1,12 +1,12 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120" width="120" height="120">
-  <circle cx="60" cy="60" r="56" fill="#0f1420" stroke="#c9971f" stroke-width="2"/>
-  <circle cx="60" cy="60" r="47" fill="none" stroke="#2a5f8f" stroke-width="1.5"/>
-  <g fill="none" stroke="#c9971f" stroke-width="1.4">
+  <circle cx="60" cy="60" r="56" fill="#fffdf8" stroke="#b8892f" stroke-width="2"/>
+  <circle cx="60" cy="60" r="47" fill="none" stroke="#3f7cb0" stroke-width="1.5"/>
+  <g fill="none" stroke="#b8892f" stroke-width="1.4">
     <path d="M60 22 C68 34 68 46 60 58 C52 46 52 34 60 22 Z"/>
     <path d="M60 98 C68 86 68 74 60 62 C52 74 52 86 60 98 Z"/>
     <path d="M22 60 C34 52 46 52 58 60 C46 68 34 68 22 60 Z"/>
     <path d="M98 60 C86 52 74 52 62 60 C74 68 86 68 98 60 Z"/>
   </g>
-  <circle cx="60" cy="60" r="6" fill="#c9971f"/>
-  <text x="60" y="66" font-family="'Playfair Display', Georgia, serif" font-size="34" fill="#f3e6c8" text-anchor="middle" font-weight="700" dy="0">B</text>
+  <circle cx="60" cy="60" r="6" fill="#b8892f"/>
+  <text x="60" y="66" font-family="'Playfair Display', Georgia, serif" font-size="34" fill="#1f3a5f" text-anchor="middle" font-weight="700" dy="0">B</text>
 </svg>
