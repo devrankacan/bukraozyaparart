@@ -1,0 +1,85 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1800 800" width="1800" height="800" role="img" aria-label="Çini ve tezhip desenli arka plan">
+  <defs>
+    <g id="hb-petal-ring">
+      <path d="M0 -100 C 20 -60, 20 -20, 0 10 C -20 -20, -20 -60, 0 -100 Z"/>
+    </g>
+    <g id="hb-flower">
+      <use href="#hb-petal-ring" transform="rotate(0)"/>
+      <use href="#hb-petal-ring" transform="rotate(30)"/>
+      <use href="#hb-petal-ring" transform="rotate(60)"/>
+      <use href="#hb-petal-ring" transform="rotate(90)"/>
+      <use href="#hb-petal-ring" transform="rotate(120)"/>
+      <use href="#hb-petal-ring" transform="rotate(150)"/>
+      <use href="#hb-petal-ring" transform="rotate(180)"/>
+      <use href="#hb-petal-ring" transform="rotate(210)"/>
+      <use href="#hb-petal-ring" transform="rotate(240)"/>
+      <use href="#hb-petal-ring" transform="rotate(270)"/>
+      <use href="#hb-petal-ring" transform="rotate(300)"/>
+      <use href="#hb-petal-ring" transform="rotate(330)"/>
+    </g>
+  </defs>
+
+  <!-- soft tile wallpaper texture, right two-thirds -->
+  <g fill="none" stroke="#3f7cb0" stroke-width="1" opacity="0.12">
+    <use href="#hb-flower" transform="translate(950,150) scale(0.45)"/>
+    <use href="#hb-flower" transform="translate(1250,500) scale(0.55)"/>
+    <use href="#hb-flower" transform="translate(1650,300) scale(0.4)"/>
+    <use href="#hb-flower" transform="translate(1550,680) scale(0.35)"/>
+    <use href="#hb-flower" transform="translate(1100,700) scale(0.3)"/>
+  </g>
+
+  <!-- focal medallion, large -->
+  <g transform="translate(1360,420)">
+    <circle r="230" fill="none" stroke="#b8892f" stroke-width="2" opacity="0.55"/>
+    <circle r="205" fill="none" stroke="#3f7cb0" stroke-width="1.4" opacity="0.5"/>
+    <g fill="none" stroke="#3f7cb0" stroke-width="1.6" opacity="0.6">
+      <use href="#hb-flower" transform="scale(1.55)"/>
+    </g>
+    <circle r="60" fill="#faf6ec" fill-opacity="0.5" stroke="#b8892f" stroke-width="1.6" opacity="0.7"/>
+    <g fill="#b8892f" opacity="0.75">
+      <circle r="8"/>
+      <path d="M0 -40 c9 11 9 20 0 30 c-9 -10 -9 -19 0 -30 Z"/>
+      <path d="M0 40 c9 -11 9 -20 0 -30 c-9 10 -9 19 0 30 Z"/>
+      <path d="M-40 0 c11 -9 20 -9 30 0 c-10 9 -19 9 -30 0 Z"/>
+      <path d="M40 0 c-11 -9 -20 -9 -30 0 c10 9 19 9 30 0 Z"/>
+    </g>
+  </g>
+
+  <!-- secondary medallion, upper right -->
+  <g transform="translate(1640,160) scale(0.55)" opacity="0.5">
+    <circle r="230" fill="none" stroke="#b8892f" stroke-width="2"/>
+    <circle r="205" fill="none" stroke="#3f7cb0" stroke-width="1.4"/>
+    <g fill="none" stroke="#3f7cb0" stroke-width="1.6">
+      <use href="#hb-flower" transform="scale(1.55)"/>
+    </g>
+    <circle r="60" fill="#faf6ec" fill-opacity="0.5" stroke="#b8892f" stroke-width="1.6"/>
+    <circle r="8" fill="#b8892f"/>
+  </g>
+
+  <!-- small medallion, lower right -->
+  <g transform="translate(1180,660) scale(0.32)" opacity="0.45">
+    <circle r="230" fill="none" stroke="#b8892f" stroke-width="3"/>
+    <g fill="none" stroke="#3f7cb0" stroke-width="2.2">
+      <use href="#hb-flower" transform="scale(1.55)"/>
+    </g>
+    <circle r="60" fill="#faf6ec" fill-opacity="0.5" stroke="#b8892f" stroke-width="2.4"/>
+  </g>
+
+  <!-- lemon branch flourish, top right -->
+  <g transform="translate(1620,90) rotate(15) scale(1.6)" opacity="0.85">
+    <path d="M0 0 C 20 20, 30 45, 20 70" fill="none" stroke="#4a7a3d" stroke-width="2.5"/>
+    <ellipse cx="14" cy="18" rx="12" ry="9" fill="#e8c94a" stroke="#b8892f" stroke-width="1" transform="rotate(-25 14 18)"/>
+    <ellipse cx="24" cy="46" rx="11" ry="8" fill="#e8c94a" stroke="#b8892f" stroke-width="1" transform="rotate(15 24 46)"/>
+    <path d="M-2 8 C -14 4 -22 10 -26 20" fill="none" stroke="#4a7a3d" stroke-width="2"/>
+    <ellipse cx="-24" cy="16" rx="9" ry="14" fill="#5f9a4c" transform="rotate(-30 -24 16)"/>
+  </g>
+
+  <!-- scattered gold dots -->
+  <g fill="#b8892f" opacity="0.4">
+    <circle cx="980" cy="260" r="4"/>
+    <circle cx="1050" cy="600" r="5"/>
+    <circle cx="1450" cy="700" r="4"/>
+    <circle cx="1750" cy="480" r="5"/>
+    <circle cx="900" cy="500" r="3"/>
+  </g>
+</svg>
