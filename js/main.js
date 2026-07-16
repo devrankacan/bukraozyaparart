@@ -54,9 +54,11 @@
 
     const igHandle = settings.instagram || "";
     const igUrl = igHandle ? `https://instagram.com/${igHandle.replace(/^@/, "")}` : "#";
-    document.querySelectorAll("#instagram-link, #contact-instagram").forEach((el) => {
+    document.querySelectorAll("#instagram-link, #contact-instagram, #gallery-instagram-link").forEach((el) => {
       el.href = igUrl;
     });
+    const igHandleLabel = $("#gallery-instagram-handle");
+    if (igHandleLabel && igHandle) igHandleLabel.textContent = igHandle.replace(/^@/, "");
 
     const defaultMessage = `Merhaba, ${settings.brandName || "atölyeniz"} hakkında bilgi almak istiyorum.`;
     const generalWaLink = waLink(settings.whatsapp, defaultMessage);
@@ -65,10 +67,10 @@
     });
 
     const loc = $("#contact-location");
-    if (loc) loc.textContent = settings.location ? `📍 ${settings.location}` : "";
+    if (loc) loc.textContent = settings.location || "";
 
     const email = $("#contact-email");
-    if (email) email.textContent = settings.email ? `✉️ ${settings.email}` : "";
+    if (email) email.textContent = settings.email || "";
 
     const heroBtn = document.querySelector(".hero-actions .btn-gold");
     if (heroBtn && settings.heroButtonText) heroBtn.textContent = settings.heroButtonText;
@@ -108,9 +110,9 @@
           <div class="event-body">
             <h3>${escapeHtml(ev.title)}</h3>
             <div class="event-meta">
-              ${ev.time ? `<span>🕐 ${escapeHtml(ev.time)}</span>` : ""}
-              ${ev.location ? `<span>📍 ${escapeHtml(ev.location)}</span>` : ""}
-              ${ev.capacity ? `<span>🎟 ${escapeHtml(ev.capacity)}</span>` : ""}
+              ${ev.time ? `<span>${escapeHtml(ev.time)}</span>` : ""}
+              ${ev.location ? `<span>${escapeHtml(ev.location)}</span>` : ""}
+              ${ev.capacity ? `<span>${escapeHtml(ev.capacity)}</span>` : ""}
             </div>
             <p class="desc">${escapeHtml(ev.description || "")}</p>
             <a class="btn btn-whatsapp" href="${link}" target="_blank" rel="noopener">WhatsApp ile Rezervasyon Yap</a>
@@ -118,17 +120,6 @@
         </article>
       `;
     }).join("");
-  }
-
-  function renderGallery() {
-    const grid = $("#gallery-grid");
-    if (!grid) return;
-    const tileCount = 8;
-    let html = "";
-    for (let i = 0; i < tileCount; i++) {
-      html += `<div class="tile"><img src="/assets/logo.svg" alt="" loading="lazy"></div>`;
-    }
-    grid.innerHTML = html;
   }
 
   function setupNav() {
@@ -141,7 +132,6 @@
 
   async function init() {
     setupNav();
-    renderGallery();
     $("#year").textContent = new Date().getFullYear();
 
     try {
