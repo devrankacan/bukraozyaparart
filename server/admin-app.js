@@ -11,7 +11,7 @@ const bcrypt = require("bcryptjs");
 const multer = require("multer");
 const rateLimit = require("express-rate-limit");
 
-const PORT = process.env.ADMIN_PORT || 4001;
+const PORT = process.env.NODE_PORT || 4001;
 const SITE_URL = process.env.SITE_URL || "/";
 const ADMIN_USERNAME = process.env.ADMIN_USERNAME;
 const ADMIN_PASSWORD_HASH = process.env.ADMIN_PASSWORD_HASH;

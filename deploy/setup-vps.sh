@@ -39,7 +39,7 @@ else
   echo "Node.js zaten kurulu: $(node -v)"
 fi
 
-echo "== 2/8: Boş portlar seçiliyor =="
+echo "== 2/8: Portlar belirleniyor =="
 is_port_free() { ! ss -ltn 2>/dev/null | awk '{print $4}' | grep -qE "[:.]$1\$"; }
 
 find_free_port() {
@@ -50,12 +50,41 @@ find_free_port() {
   echo "$port"
 }
 
-SITE_PORT=$(find_free_port 8081)
-ADMIN_PORT=$(find_free_port $((SITE_PORT + 1)))
-NODE_PORT=$(find_free_port 4001)
+# Bu script daha önce çalıştırıldıysa aynı portları koru: her seferinde yeni
+# bir boş port aramak, mevcut nginx/panel eşleşmesini bozar (502 hatası).
+NGINX_CONF_PATH="/etc/nginx/sites-available/bukuart"
+ENV_FILE="$SITE_DIR/server/.env"
+
+EXISTING_PORTS=()
+if [ -f "$NGINX_CONF_PATH" ]; then
+  mapfile -t EXISTING_PORTS < <(grep -oE '^[[:space:]]*listen [0-9]+;' "$NGINX_CONF_PATH" | grep -oE '[0-9]+' | uniq)
+fi
+
+if [ "${#EXISTING_PORTS[@]}" -ge 2 ]; then
+  SITE_PORT="${EXISTING_PORTS[0]}"
+  ADMIN_PORT="${EXISTING_PORTS[1]}"
+  echo "Daha önce kurulmuş portlar tekrar kullanılıyor (site: $SITE_PORT, panel: $ADMIN_PORT)."
+else
+  SITE_PORT=$(find_free_port 8081)
+  ADMIN_PORT=$(find_free_port $((SITE_PORT + 1)))
+fi
+
+NODE_PORT=""
+if [ -f "$ENV_FILE" ]; then
+  NODE_PORT=$(grep -oE '^NODE_PORT=[0-9]+' "$ENV_FILE" | cut -d= -f2 || true)
+fi
+if [ -z "$NODE_PORT" ]; then
+  NODE_PORT=$(find_free_port 4001)
+fi
+
 echo "Site portu: $SITE_PORT | Panel portu: $ADMIN_PORT | Dahili panel süreci: 127.0.0.1:$NODE_PORT"
 
 echo "== 3/8: Site dosyaları çekiliyor =="
+# Önceki çalıştırmada $SITE_DIR www-data'ya devredildiği için root olarak
+# çalışan git burayı "güvensiz" sayıp işlemi reddedebilir; buna izin veriyoruz.
+git config --global --get-all safe.directory 2>/dev/null | grep -qxF "$SITE_DIR" \
+  || git config --global --add safe.directory "$SITE_DIR"
+
 CONTENT_BACKUP_DIR=$(mktemp -d)
 if [ -d "$SITE_DIR/.git" ]; then
   echo "$SITE_DIR zaten mevcut, güncelleniyor..."
@@ -100,7 +129,7 @@ else
 ADMIN_USERNAME=$ADMIN_USERNAME
 ADMIN_PASSWORD_HASH=$ADMIN_PASSWORD_HASH
 SESSION_SECRET=$SESSION_SECRET
-ADMIN_PORT=$NODE_PORT
+NODE_PORT=$NODE_PORT
 SITE_URL=http://$VPS_IP:$SITE_PORT/
 EOF
   chmod 600 "$SITE_DIR/server/.env"
