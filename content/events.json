@@ -1,0 +1,40 @@
+{
+  "events": [
+    {
+      "title": "Çini Tabak Boyama Workshop",
+      "image": "/assets/placeholder-event.svg",
+      "date": "2026-08-04",
+      "time": "12:00 - 16:00",
+      "location": "Bahçeşehir",
+      "capacity": "Kontenjan sınırlıdır",
+      "price": "",
+      "description": "Geleneksel çini desenlerini kendi ellerinizle renklendirin. Benzersiz tabaklar tasarlayacağınız, keyifli ve ilham dolu bir atölye sizi bekliyor.",
+      "active": true,
+      "whatsappMessage": ""
+    },
+    {
+      "title": "Limonlu Çini Workshopu",
+      "image": "/assets/placeholder-event.svg",
+      "date": "2026-08-18",
+      "time": "13:00 - 17:00",
+      "location": "Bahçeşehir Atölye",
+      "capacity": "Kontenjan sınırlıdır",
+      "price": "",
+      "description": "Bu özel workshopta geleneksel çini tekniklerini öğrenip, kendi renklerinizle fırça dokunuşlarınızı tabağınıza taşıyacaksınız.",
+      "active": true,
+      "whatsappMessage": ""
+    },
+    {
+      "title": "Minyatür ve Tezhip Atölyesi",
+      "image": "/assets/placeholder-event.svg",
+      "date": "2026-09-05",
+      "time": "12:00 - 15:00",
+      "location": "Bahçeşehir Atölye",
+      "capacity": "Kontenjan sınırlıdır",
+      "price": "",
+      "description": "Tezhip sanatının inceliklerini keşfedin; klasik motifler eşliğinde kendi minyatür çalışmanızı oluşturun.",
+      "active": true,
+      "whatsappMessage": ""
+    }
+  ]
+}

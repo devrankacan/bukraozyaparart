@@ -1,0 +1,57 @@
+backend:
+  name: git-gateway
+  branch: main
+
+# Not: Netlify'da hangi branch'i yayınlıyorsanız yukarıdaki "branch" değerini
+# o branch adıyla değiştirin (örn. geçici olarak "claude/workshop-events-website-p4wwtb").
+
+publish_mode: simple
+media_folder: "images/uploads"
+public_folder: "/images/uploads"
+locale: "tr"
+
+collections:
+  - name: "settings"
+    label: "Site Ayarları"
+    editor:
+      preview: false
+    files:
+      - file: "content/settings.json"
+        label: "Genel Ayarlar"
+        name: "settings"
+        fields:
+          - { label: "Marka Adı", name: "brandName", widget: "string" }
+          - { label: "Slogan", name: "tagline", widget: "string" }
+          - { label: "Hakkımızda Metni", name: "about", widget: "text" }
+          - { label: "WhatsApp Numarası (ör. 905XXXXXXXXX)", name: "whatsapp", widget: "string", hint: "Başında + veya boşluk olmadan, ülke koduyla birlikte yazın." }
+          - { label: "Instagram Kullanıcı Adı", name: "instagram", widget: "string", hint: "@ işareti olmadan yazın, örn. bukraozyapar.art" }
+          - { label: "E-posta", name: "email", widget: "string", required: false }
+          - { label: "Konum", name: "location", widget: "string", required: false }
+          - { label: "Hero Buton Metni", name: "heroButtonText", widget: "string", required: false }
+          - { label: "WhatsApp Buton Metni", name: "whatsappButtonText", widget: "string", required: false }
+          - { label: "İletişim Bölümü Notu", name: "footerNote", widget: "text", required: false }
+
+  - name: "events"
+    label: "Etkinlikler"
+    editor:
+      preview: false
+    files:
+      - file: "content/events.json"
+        label: "Etkinlik Listesi"
+        name: "events"
+        fields:
+          - label: "Etkinlikler"
+            name: "events"
+            widget: "list"
+            summary: "{{title}} — {{date}}"
+            fields:
+              - { label: "Başlık", name: "title", widget: "string" }
+              - { label: "Görsel", name: "image", widget: "image", required: false, hint: "Boş bırakılırsa varsayılan görsel kullanılır." }
+              - { label: "Tarih", name: "date", widget: "date", format: "YYYY-MM-DD" }
+              - { label: "Saat", name: "time", widget: "string", required: false, hint: "örn. 12:00 - 16:00" }
+              - { label: "Konum", name: "location", widget: "string" }
+              - { label: "Kontenjan", name: "capacity", widget: "string", required: false }
+              - { label: "Ücret", name: "price", widget: "string", required: false }
+              - { label: "Açıklama", name: "description", widget: "text" }
+              - { label: "Sitede Göster (Aktif)", name: "active", widget: "boolean", default: true }
+              - { label: "Özel WhatsApp Mesajı", name: "whatsappMessage", widget: "string", required: false, hint: "Boş bırakılırsa otomatik mesaj oluşturulur." }

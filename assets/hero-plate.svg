@@ -1,0 +1,50 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 480 480" width="480" height="480" role="img" aria-label="Çini tabak motifi">
+  <circle cx="240" cy="240" r="230" fill="#0c1119" stroke="#c9971f" stroke-width="3"/>
+  <circle cx="240" cy="240" r="205" fill="none" stroke="#2a5f8f" stroke-width="2"/>
+  <circle cx="240" cy="240" r="190" fill="none" stroke="#c9971f" stroke-width="1"/>
+
+  <g stroke="#3f7cb0" stroke-width="1.6" fill="none" opacity="0.9">
+    <g id="petal-ring">
+      <path d="M240 60 C260 100 260 140 240 170 C220 140 220 100 240 60 Z"/>
+    </g>
+  </g>
+
+  <g fill="none" stroke="#3f7cb0" stroke-width="1.6">
+    <use href="#petal-ring" transform="rotate(30 240 240)"/>
+    <use href="#petal-ring" transform="rotate(60 240 240)"/>
+    <use href="#petal-ring" transform="rotate(90 240 240)"/>
+    <use href="#petal-ring" transform="rotate(120 240 240)"/>
+    <use href="#petal-ring" transform="rotate(150 240 240)"/>
+    <use href="#petal-ring" transform="rotate(180 240 240)"/>
+    <use href="#petal-ring" transform="rotate(210 240 240)"/>
+    <use href="#petal-ring" transform="rotate(240 240 240)"/>
+    <use href="#petal-ring" transform="rotate(270 240 240)"/>
+    <use href="#petal-ring" transform="rotate(300 240 240)"/>
+    <use href="#petal-ring" transform="rotate(330 240 240)"/>
+    <use href="#petal-ring" transform="rotate(0 240 240)"/>
+  </g>
+
+  <circle cx="240" cy="240" r="70" fill="none" stroke="#c9971f" stroke-width="2"/>
+  <circle cx="240" cy="240" r="58" fill="#0f1420" stroke="#3f7cb0" stroke-width="1.4"/>
+
+  <g fill="#c9971f">
+    <circle cx="240" cy="240" r="9"/>
+    <path d="M240 195 c10 12 10 22 0 33 c-10 -11 -10 -21 0 -33 Z" opacity="0.9"/>
+    <path d="M240 285 c10 -12 10 -22 0 -33 c-10 11 -10 21 0 33 Z" opacity="0.9"/>
+    <path d="M195 240 c12 -10 22 -10 33 0 c-11 10 -21 10 -33 0 Z" opacity="0.9"/>
+    <path d="M285 240 c-12 -10 -22 -10 -33 0 c11 10 21 10 33 0 Z" opacity="0.9"/>
+  </g>
+
+  <g fill="none" stroke="#e8c96b" stroke-width="1">
+    <circle cx="240" cy="240" r="165" stroke-dasharray="2 10"/>
+  </g>
+
+  <!-- lemon branch flourish -->
+  <g transform="translate(330,120) rotate(20)">
+    <path d="M0 0 C 20 20, 30 45, 20 70" fill="none" stroke="#4a7a3d" stroke-width="2.5"/>
+    <ellipse cx="14" cy="18" rx="12" ry="9" fill="#e8c94a" stroke="#c9971f" stroke-width="1" transform="rotate(-25 14 18)"/>
+    <ellipse cx="24" cy="46" rx="11" ry="8" fill="#e8c94a" stroke="#c9971f" stroke-width="1" transform="rotate(15 24 46)"/>
+    <path d="M-2 8 C -14 4 -22 10 -26 20" fill="none" stroke="#4a7a3d" stroke-width="2"/>
+    <ellipse cx="-24" cy="16" rx="9" ry="14" fill="#5f9a4c" transform="rotate(-30 -24 16)"/>
+  </g>
+</svg>
