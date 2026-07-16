@@ -126,6 +126,31 @@
     }).join("");
   }
 
+  function renderGallery(galleryData, settings) {
+    const grid = $("#about-gallery");
+    if (!grid) return;
+
+    const images = galleryData.images || [];
+    const igHandle = (settings.instagram || "").replace(/^@/, "");
+    const igUrl = igHandle ? `https://instagram.com/${igHandle}` : "#";
+
+    if (images.length === 0) {
+      grid.innerHTML = `
+        <div class="about-gallery-empty">
+          <p>Instagram gönderilerimiz yakında burada.</p>
+          <a href="${igUrl}" class="btn btn-outline" target="_blank" rel="noopener">Instagram'ı Ziyaret Et</a>
+        </div>
+      `;
+      return;
+    }
+
+    grid.innerHTML = images.slice(0, 9).map((img) => `
+      <a href="${igUrl}" target="_blank" rel="noopener">
+        <img src="${escapeHtml(img.image)}" alt="${escapeHtml(img.caption || "")}" loading="lazy">
+      </a>
+    `).join("");
+  }
+
   function setupNav() {
     const toggle = $("#menu-toggle");
     const nav = $("#nav-links");
@@ -139,12 +164,14 @@
     $("#year").textContent = new Date().getFullYear();
 
     try {
-      const [settings, eventsData] = await Promise.all([
+      const [settings, eventsData, galleryData] = await Promise.all([
         loadJson("/content/settings.json"),
         loadJson("/content/events.json"),
+        loadJson("/content/gallery.json"),
       ]);
       applySettings(settings);
       renderEvents(eventsData, settings);
+      renderGallery(galleryData, settings);
     } catch (err) {
       console.error("İçerik yüklenirken hata oluştu:", err);
       const grid = $("#events-grid");

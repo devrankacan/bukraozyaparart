@@ -24,6 +24,7 @@ if (!ADMIN_USERNAME || !ADMIN_PASSWORD_HASH || !SESSION_SECRET) {
 
 const SETTINGS_PATH = path.join(__dirname, "..", "content", "settings.json");
 const EVENTS_PATH = path.join(__dirname, "..", "content", "events.json");
+const GALLERY_PATH = path.join(__dirname, "..", "content", "gallery.json");
 const UPLOAD_DIR = path.join(__dirname, "..", "images", "uploads");
 
 fs.mkdirSync(UPLOAD_DIR, { recursive: true });
@@ -32,6 +33,7 @@ const app = express();
 app.set("trust proxy", 1);
 app.use(express.urlencoded({ extended: true }));
 app.use("/assets", express.static(path.join(__dirname, "..", "assets")));
+app.use("/images/uploads", express.static(UPLOAD_DIR));
 
 app.use(session({
   secret: SESSION_SECRET,
@@ -107,6 +109,11 @@ function layout(title, body) {
   button.danger { background: #b6435a; color:#fff; }
   .event-item { border-top: 1px solid var(--border); padding-top: 18px; margin-top: 18px; }
   .event-item:first-of-type { border-top:none; padding-top:0; margin-top:0; }
+  .gallery-grid-admin { display:flex; flex-wrap:wrap; gap:16px; }
+  .gallery-item-admin { width: 140px; }
+  .gallery-item-admin img { width:140px; height:140px; object-fit:cover; border-radius:8px; border:1px solid var(--border); }
+  .gallery-item-admin form { margin-top:6px; }
+  .gallery-item-admin button { margin-top:6px; padding:6px 14px; font-size:.78rem; width:100%; }
   .top-bar { display:flex; justify-content:space-between; align-items:center; margin-bottom:24px; }
   .top-bar a { color: var(--gold); font-size:.85rem; }
   .flash { background:#1c2c1c; border:1px solid #3a6b3a; color:#bfe6bf; padding:10px 16px; border-radius:8px; margin-bottom:20px; font-size:.9rem; }
@@ -167,6 +174,7 @@ app.post("/logout", (req, res) => {
 app.get("/", requireAuth, (req, res) => {
   const settings = readJson(SETTINGS_PATH);
   const eventsData = readJson(EVENTS_PATH);
+  const galleryData = readJson(GALLERY_PATH);
   const saved = req.query.saved ? `<div class="flash">Değişiklikler kaydedildi.</div>` : "";
 
   const eventsHtml = (eventsData.events || []).map((ev, i) => `
@@ -203,6 +211,15 @@ app.get("/", requireAuth, (req, res) => {
       </form>
     </div>
   `).join("") || "<p>Henüz etkinlik eklenmemiş.</p>";
+
+  const galleryHtml = (galleryData.images || []).map((img, i) => `
+    <div class="gallery-item-admin">
+      <img src="${escapeHtml(img.image)}" alt="${escapeHtml(img.caption || "")}">
+      <form method="POST" action="/gallery/${i}/delete" onsubmit="return confirm('Bu görseli silmek istediğinize emin misiniz?');">
+        <button type="submit" class="danger">Sil</button>
+      </form>
+    </div>
+  `).join("") || "<p>Henüz galeri görseli eklenmemiş. Anasayfadaki \"Hakkımızda\" bölümünde bu görseller Instagram gönderileriniz gibi gösterilir.</p>";
 
   res.send(layout("Panel", `
     <div class="top-bar">
@@ -241,6 +258,18 @@ app.get("/", requireAuth, (req, res) => {
     <div class="card">
       <h2>Etkinlikler</h2>
       ${eventsHtml}
+    </div>
+
+    <div class="card">
+      <h2>Galeri (Anasayfa "Hakkımızda" Bölümü)</h2>
+      <div class="gallery-grid-admin">${galleryHtml}</div>
+      <form method="POST" action="/gallery" enctype="multipart/form-data" style="margin-top:20px;">
+        <label>Yeni Görsel</label>
+        <input type="file" name="image" accept="image/*" required>
+        <label>Açıklama (opsiyonel, alt metin olarak kullanılır)</label>
+        <input type="text" name="caption">
+        <button type="submit">Galeriye Ekle</button>
+      </form>
     </div>
 
     <div class="card">
@@ -342,6 +371,28 @@ app.post("/events/:index/delete", requireAuth, (req, res) => {
   if (eventsData.events && eventsData.events[idx]) {
     eventsData.events.splice(idx, 1);
     writeJson(EVENTS_PATH, eventsData);
+  }
+  res.redirect("/?saved=1");
+});
+
+app.post("/gallery", requireAuth, upload.single("image"), (req, res) => {
+  if (!req.file) return res.redirect("/");
+  const galleryData = readJson(GALLERY_PATH);
+  galleryData.images = galleryData.images || [];
+  galleryData.images.push({
+    image: `/images/uploads/${req.file.filename}`,
+    caption: req.body.caption || "",
+  });
+  writeJson(GALLERY_PATH, galleryData);
+  res.redirect("/?saved=1");
+});
+
+app.post("/gallery/:index/delete", requireAuth, (req, res) => {
+  const idx = Number(req.params.index);
+  const galleryData = readJson(GALLERY_PATH);
+  if (galleryData.images && galleryData.images[idx]) {
+    galleryData.images.splice(idx, 1);
+    writeJson(GALLERY_PATH, galleryData);
   }
   res.redirect("/?saved=1");
 });

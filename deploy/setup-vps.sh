@@ -91,11 +91,13 @@ if [ -d "$SITE_DIR/.git" ]; then
   # güncellemesiyle ezilmemesi için önce yedekleyip sonra geri koyuyoruz.
   cp "$SITE_DIR/content/settings.json" "$CONTENT_BACKUP_DIR/" 2>/dev/null || true
   cp "$SITE_DIR/content/events.json" "$CONTENT_BACKUP_DIR/" 2>/dev/null || true
+  cp "$SITE_DIR/content/gallery.json" "$CONTENT_BACKUP_DIR/" 2>/dev/null || true
   git -C "$SITE_DIR" fetch origin "$BRANCH" --quiet
   git -C "$SITE_DIR" checkout "$BRANCH" --quiet
   git -C "$SITE_DIR" reset --hard "origin/$BRANCH" --quiet
   [ -f "$CONTENT_BACKUP_DIR/settings.json" ] && cp "$CONTENT_BACKUP_DIR/settings.json" "$SITE_DIR/content/settings.json"
   [ -f "$CONTENT_BACKUP_DIR/events.json" ] && cp "$CONTENT_BACKUP_DIR/events.json" "$SITE_DIR/content/events.json"
+  [ -f "$CONTENT_BACKUP_DIR/gallery.json" ] && cp "$CONTENT_BACKUP_DIR/gallery.json" "$SITE_DIR/content/gallery.json"
 else
   git clone --branch "$BRANCH" --single-branch "$REPO_URL" "$SITE_DIR"
 fi
