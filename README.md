@@ -23,16 +23,21 @@ admin/                   → (Alternatif) Netlify üzerinde barındırma için D
 ## 1. VPS'e Kurulum (önerilen yöntem)
 
 `deploy/setup-vps.sh` script'i, **Ubuntu/Debian tabanlı** bir VPS'te siteyi ve
-yönetim panelini otomatik olarak kurar. Script şunları yapar:
+yönetim panelini `bukraozyaparart.taslak.site` alan adında, ücretsiz Let's
+Encrypt sertifikasıyla (HTTPS) otomatik olarak kurar. Script şunları yapar:
 
-- Eksikse Nginx ve Node.js'i kurar (mevcut kuruluysa dokunmaz).
+- Eksikse Nginx, Node.js ve certbot'u kurar (mevcut kuruluysa dokunmaz).
 - Bu deponun ilgili branch'ini `/var/www/bukuart` altına indirir.
-- **Kullanılmayan iki port** seçer (biri site için, biri panel için) — sunucudaki
-  diğer sitelerin/portların hiçbirine dokunmaz.
+- Panel için **kullanılmayan bir port** seçer — sunucudaki diğer
+  sitelerin/portların hiçbirine dokunmaz. Site kendi alan adı üzerinden
+  standart 80/443 portlarını kullanır (nginx aynı sunucudaki diğer siteleri
+  `server_name` ile ayırt eder, çakışma olmaz).
 - Panel için kullanıcı adı/şifre belirlemenizi ister, güvenli bir oturum anahtarı
   üretir.
 - Paneli `systemd` servisi olarak kurar (sunucu yeniden başlasa da otomatik ayağa
   kalkar).
+- `certbot` ile `bukraozyaparart.taslak.site` için ücretsiz bir HTTPS
+  sertifikası alır ve otomatik yenileme kurar.
 - Nginx'e **yeni ve izole** bir site tanımı ekler (mevcut `sites-available` /
   `sites-enabled` dosyalarınızın hiçbirini değiştirmez).
 
@@ -53,16 +58,16 @@ Script size sırasıyla:
 Kurulum bitince ekranda şöyle bir özet göreceksiniz:
 
 ```
-Site   : http://VPS_IP_ADRESINIZ:8081
-Panel  : http://VPS_IP_ADRESINIZ:8082
+Site   : https://bukraozyaparart.taslak.site
+Panel  : https://bukraozyaparart.taslak.site:8082
 ```
 
 Bu adresleri tarayıcınızda açarak siteyi ve panel giriş ekranını görebilirsiniz.
 
-> **Not:** Panel şu an düz HTTP üzerinden çalışır (IP:port ile, alan adınız
-> olmadığı için ücretsiz TLS sertifikası kurulamıyor). İleride bir alan adı
-> bağlarsanız `certbot --nginx` ile HTTPS eklemenizi önemle tavsiye ederiz —
-> aksi halde panel şifreniz ağ üzerinde şifrelenmeden iletilir.
+> **Not:** DNS kaydı (`bukraozyaparart` → sunucunuzun IP'si) henüz yayılmamışsa
+> certbot sertifika alamaz; script bu durumda site/paneli geçici olarak düz
+> HTTP ile ayakta tutar ve uyarı basar. DNS yayıldıktan sonra script'i tekrar
+> çalıştırmanız yeterlidir.
 
 ### Script'i tekrar çalıştırma (güncelleme)
 
@@ -76,8 +81,8 @@ sudo bash /tmp/bukuart-setup/deploy/setup-vps.sh
 
 ## 2. Panel Kullanımı
 
-`http://VPS_IP_ADRESINIZ:PANEL_PORTU` adresine gidip belirlediğiniz kullanıcı
-adı/şifre ile giriş yapın. Panelden:
+`https://bukraozyaparart.taslak.site:PANEL_PORTU` adresine gidip
+belirlediğiniz kullanıcı adı/şifre ile giriş yapın. Panelden:
 
 - Marka adı, slogan, hakkımızda metni, **WhatsApp numarası**, Instagram
   kullanıcı adı gibi genel ayarları güncelleyebilirsiniz.
@@ -112,17 +117,21 @@ metninizi yazabilirsiniz.
   tasarımlarınızla değiştirilebilir (aynı dosya adlarını koruyarak, sunucuda
   `/var/www/bukuart/assets/` altında).
 
-## 6. Alan Adı ve HTTPS Ekleme
+## 6. Alan Adı ve HTTPS
 
-Bir alan adınız olduğunda (örn. `bukuart.com`):
+Site, `bukraozyaparart.taslak.site` alan adı ve HTTPS ile kurulacak şekilde
+yapılandırıldı — `deploy/setup-vps.sh` içindeki `DOMAIN` değişkeni bunu
+belirler. Farklı bir alan adına geçmek isterseniz:
 
-1. Alan adının DNS **A kaydını** VPS'inizin IP adresine yönlendirin.
-2. `/etc/nginx/sites-available/bukuart` dosyasındaki `server_name _;`
-   satırlarını `server_name bukuart.com www.bukuart.com;` şeklinde güncelleyin.
-3. `sudo certbot --nginx` ile ücretsiz Let's Encrypt sertifikası kurun (VPS'te
-   `certbot` kurulu değilse: `sudo apt install certbot python3-certbot-nginx`).
-4. Panelin `server/.env` dosyasındaki `SITE_URL` değerini yeni adresle
-   güncelleyin ve `sudo systemctl restart bukuart-admin` çalıştırın.
+1. Yeni alan adının DNS **A kaydını** VPS'inizin IP adresine yönlendirin.
+2. `deploy/setup-vps.sh` dosyasındaki `DOMAIN="bukraozyaparart.taslak.site"`
+   satırını yeni alan adınızla değiştirin.
+3. Script'i tekrar çalıştırın; certbot yeni alan adı için otomatik olarak
+   sertifika alır.
+
+HTTPS sertifikası Let's Encrypt tarafından 90 günde bir otomatik yenilenir
+(certbot kurulumla birlikte gelen sistem zamanlayıcısı üzerinden), elle bir
+şey yapmanız gerekmez.
 
 ## 7. Lokal Önizleme (geliştirme amaçlı)
 
