@@ -31,6 +31,7 @@ fs.mkdirSync(UPLOAD_DIR, { recursive: true });
 const app = express();
 app.set("trust proxy", 1);
 app.use(express.urlencoded({ extended: true }));
+app.use("/assets", express.static(path.join(__dirname, "..", "assets")));
 
 app.use(session({
   secret: SESSION_SECRET,
@@ -111,6 +112,9 @@ function layout(title, body) {
   .flash { background:#1c2c1c; border:1px solid #3a6b3a; color:#bfe6bf; padding:10px 16px; border-radius:8px; margin-bottom:20px; font-size:.9rem; }
   .thumb { max-width: 120px; border-radius: 6px; border:1px solid var(--border); display:block; margin-top:8px; }
   .site-link { font-size:.82rem; color: var(--muted); }
+  .panel-logo { display:block; height: 96px; width:auto; margin: 0 auto; }
+  .panel-logo-row { text-align:center; margin-bottom: 8px; }
+  .top-bar .panel-logo { height: 64px; margin: 0; }
 </style>
 </head>
 <body>
@@ -129,8 +133,10 @@ function requireAuth(req, res, next) {
 app.get("/login", (req, res) => {
   const error = req.query.error ? `<div class="flash" style="background:#2c1c1c;border-color:#6b3a3a;color:#e6bfbf;">Kullanıcı adı veya şifre hatalı.</div>` : "";
   res.send(layout("Giriş", `
-    <h1>BÜKÜ ART · Yönetim Paneli</h1>
-    <div class="card" style="max-width:360px;margin:60px auto 0;">
+    <div class="panel-logo-row">
+      <img class="panel-logo" src="/assets/logo-full.png" alt="Büku Art">
+    </div>
+    <div class="card" style="max-width:360px;margin:24px auto 0;">
       ${error}
       <form method="POST" action="/login">
         <label for="username">Kullanıcı Adı</label>
@@ -200,7 +206,7 @@ app.get("/", requireAuth, (req, res) => {
 
   res.send(layout("Panel", `
     <div class="top-bar">
-      <h1 style="margin:0;">BÜKÜ ART · Yönetim Paneli</h1>
+      <img class="panel-logo" src="/assets/logo-full.png" alt="Büku Art">
       <div>
         <a class="site-link" href="${escapeHtml(SITE_URL)}" target="_blank">Siteyi Görüntüle ↗</a>
         &nbsp;·&nbsp;

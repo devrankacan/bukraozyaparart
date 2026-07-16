@@ -106,7 +106,7 @@ p {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  height: 78px;
+  height: 112px;
 }
 
 .brand {
@@ -115,12 +115,30 @@ p {
   gap: 12px;
 }
 
-.brand img {
-  width: 42px;
-  height: 42px;
+.brand-logo-full {
+  height: 84px;
+  width: auto;
 }
 
-.brand span {
+@media (max-width: 480px) {
+  .brand-logo-full {
+    height: 60px;
+  }
+}
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+.brand span:not(.sr-only) {
   font-family: var(--serif);
   font-size: 1.15rem;
   letter-spacing: 0.06em;
@@ -210,7 +228,7 @@ p {
 @media (max-width: 859px) {
   .nav-links {
     position: fixed;
-    top: 78px;
+    top: 112px;
     left: 0;
     right: 0;
     background: var(--bg-alt);
@@ -229,10 +247,19 @@ p {
   }
 }
 
+@media (max-width: 480px) {
+  .site-header .container {
+    height: 88px;
+  }
+  .nav-links {
+    top: 88px;
+  }
+}
+
 /* ---------- Hero ---------- */
 
 .hero {
-  padding: 170px 0 100px;
+  padding: 200px 0 100px;
   position: relative;
   overflow: hidden;
   background:
@@ -293,7 +320,7 @@ p {
     justify-content: center;
   }
   .hero {
-    padding-top: 140px;
+    padding-top: 160px;
   }
 }
 
@@ -584,13 +611,11 @@ footer.site-footer a:hover {
 }
 
 .footer-brand .brand {
-  margin-bottom: 12px;
+  margin-bottom: 16px;
 }
 
-.footer-brand .brand span {
-  font-family: var(--serif);
-  font-size: 1.1rem;
-  color: var(--navy);
+.footer-brand .brand .brand-logo-full {
+  height: 76px;
 }
 
 .footer-brand p {
