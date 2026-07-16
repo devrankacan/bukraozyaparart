@@ -287,7 +287,7 @@ p {
       rgba(250, 246, 236, 0.18) 85%,
       rgba(250, 246, 236, 0.05) 100%
     ),
-    url("/assets/hero-background.svg");
+    url("/assets/hero-photo.jpg");
   background-repeat: no-repeat;
   background-size: cover;
   background-position: center right;
@@ -326,7 +326,7 @@ p {
         rgba(250, 246, 236, 0.94) 0%,
         rgba(250, 246, 236, 0.94) 100%
       ),
-      url("/assets/hero-background.svg");
+      url("/assets/hero-photo.jpg");
     background-position: center;
     text-align: center;
     padding-top: 120px;
