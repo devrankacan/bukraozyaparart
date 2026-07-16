@@ -69,13 +69,10 @@ else
   ADMIN_PORT=$(find_free_port $((SITE_PORT + 1)))
 fi
 
-NODE_PORT=""
-if [ -f "$ENV_FILE" ]; then
-  NODE_PORT=$(grep -oE '^NODE_PORT=[0-9]+' "$ENV_FILE" | cut -d= -f2 || true)
-fi
-if [ -z "$NODE_PORT" ]; then
-  NODE_PORT=$(find_free_port 4001)
-fi
+# Dahili Node portu her çalıştırmada yeniden bulunur; .env ve nginx'in
+# proxy_pass hedefi aşağıda her zaman birlikte, aynı değerle yazılır, bu
+# yüzden aralarında sürüm farkı/uyumsuzluk oluşamaz.
+NODE_PORT=$(find_free_port 4001)
 
 echo "Site portu: $SITE_PORT | Panel portu: $ADMIN_PORT | Dahili panel süreci: 127.0.0.1:$NODE_PORT"
 
@@ -107,8 +104,13 @@ cd "$SITE_DIR/server"
 npm install --omit=dev --silent
 
 echo "== 5/8: Panel giriş bilgileri =="
-if [ -f "$SITE_DIR/server/.env" ]; then
-  echo ".env dosyası zaten var, mevcut giriş bilgileri korunacak."
+VPS_IP=$(curl -fsSL -4 ifconfig.me || hostname -I | awk '{print $1}')
+
+if [ -f "$ENV_FILE" ]; then
+  echo "Mevcut giriş bilgileri korunacak, port ayarları güncelleniyor."
+  ADMIN_USERNAME=$(grep -oP '(?<=^ADMIN_USERNAME=).*' "$ENV_FILE")
+  ADMIN_PASSWORD_HASH=$(grep -oP '(?<=^ADMIN_PASSWORD_HASH=).*' "$ENV_FILE")
+  SESSION_SECRET=$(grep -oP '(?<=^SESSION_SECRET=).*' "$ENV_FILE")
 else
   read -rp "Panel için kullanıcı adı belirleyin [admin]: " ADMIN_USERNAME
   ADMIN_USERNAME=${ADMIN_USERNAME:-admin}
@@ -123,18 +125,19 @@ else
 
   ADMIN_PASSWORD_HASH=$(node -e "console.log(require('bcryptjs').hashSync(process.argv[1], 10))" "$ADMIN_PASSWORD")
   SESSION_SECRET=$(node -e "console.log(require('crypto').randomBytes(32).toString('hex'))")
-  VPS_IP=$(curl -fsSL -4 ifconfig.me || hostname -I | awk '{print $1}')
+  unset ADMIN_PASSWORD ADMIN_PASSWORD_CONFIRM
+fi
 
-  cat > "$SITE_DIR/server/.env" <<EOF
+# Kimlik bilgileri korunur; port bilgisi her çalıştırmada nginx ile aynı
+# kalması için baştan yazılır (bkz. yukarısı: NODE_PORT her zaman taze bulunur).
+cat > "$ENV_FILE" <<EOF
 ADMIN_USERNAME=$ADMIN_USERNAME
 ADMIN_PASSWORD_HASH=$ADMIN_PASSWORD_HASH
 SESSION_SECRET=$SESSION_SECRET
 NODE_PORT=$NODE_PORT
 SITE_URL=http://$VPS_IP:$SITE_PORT/
 EOF
-  chmod 600 "$SITE_DIR/server/.env"
-  unset ADMIN_PASSWORD ADMIN_PASSWORD_CONFIRM
-fi
+chmod 600 "$ENV_FILE"
 
 echo "== 6/8: systemd servisi oluşturuluyor =="
 cat > "/etc/systemd/system/${SERVICE_NAME}.service" <<EOF
