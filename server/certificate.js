@@ -70,7 +70,7 @@ function streamCertificate({ name, eventTitle, eventDate, eventTime, brandName, 
       .font("Serif-Bold")
       .fontSize(Math.round(height * 0.085))
       .fillColor("#8a6520")
-      .text("KATILIM SERTİFİKASI", 0, height * 0.075, { align: "center", width, characterSpacing: 1.5 });
+      .text("KATILIM SERTİFİKASI", 0, height * 0.095, { align: "center", width, characterSpacing: 1.5 });
 
     const ruleY = height * 0.205;
     doc.moveTo(width * 0.42, ruleY).lineTo(width * 0.58, ruleY).lineWidth(1).stroke("#b8892f");
