@@ -67,15 +67,15 @@ function streamCertificate({ name, eventTitle, eventDate, brandName }, writableS
 
     doc
       .font("Serif")
-      .fontSize(Math.round(height * 0.045))
+      .fontSize(Math.round(height * 0.042))
       .fillColor("#8a6520")
-      .text("KATILIM SERTİFİKASI", 0, height * 0.28, { align: "center", width });
+      .text("KATILIM SERTİFİKASI", 0, height * 0.16, { align: "center", width, characterSpacing: 1 });
 
     doc
       .font("Serif-Bold")
-      .fontSize(Math.round(height * 0.075))
+      .fontSize(Math.round(height * 0.07))
       .fillColor("#1f3a5f")
-      .text(name || "", 0, height * 0.38, { align: "center", width });
+      .text(name || "", 0, height * 0.29, { align: "center", width });
 
     const eventLine = eventTitle
       ? `"${eventTitle}" atölyesine${eventDate ? ` ${formatDateLong(eventDate)} tarihinde` : ""} katılarak emek ve özenle tamamladığı çalışmaları onurlandırmak amacıyla düzenlenmiştir.`
@@ -83,15 +83,15 @@ function streamCertificate({ name, eventTitle, eventDate, brandName }, writableS
 
     doc
       .font("Serif")
-      .fontSize(Math.round(height * 0.032))
+      .fontSize(Math.round(height * 0.03))
       .fillColor("#2c2a24")
-      .text(eventLine, width * 0.18, height * 0.55, { align: "center", width: width * 0.64 });
+      .text(eventLine, width * 0.16, height * 0.44, { align: "center", width: width * 0.68 });
 
     doc
       .font("Serif")
-      .fontSize(Math.round(height * 0.026))
-      .fillColor("#6f6a5c")
-      .text(brandName || "BÜKÜ ART", 0, height * 0.85, { align: "center", width });
+      .fontSize(Math.round(height * 0.022))
+      .fillColor("#8a6520")
+      .text(`Düzenlenme Tarihi: ${formatDateLong(new Date().toISOString().slice(0, 10))}`, width * 0.55, height * 0.9, { align: "right", width: width * 0.37 });
 
     doc.end();
   });
