@@ -209,7 +209,8 @@ p {
 .btn-whatsapp-outline {
   border-color: var(--whatsapp);
   color: #128c3e;
-  background: transparent;
+  background: rgba(255, 253, 248, 0.94);
+  box-shadow: 0 6px 18px rgba(31, 42, 58, 0.1);
 }
 
 .btn-whatsapp-outline:hover {
