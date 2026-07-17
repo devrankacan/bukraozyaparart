@@ -455,7 +455,10 @@ app.get(`${BASE}/katilimcilar/:index/pdf`, requireAuth, (req, res, next) => {
     name: participant.name,
     eventTitle: event ? event.title : "",
     eventDate: event ? event.date : "",
+    eventLocation: event ? event.location : "",
+    eventTime: event ? event.time : "",
     brandName: settings.brandName,
+    certificateNo: `BA-${new Date().getFullYear()}-${String(idx + 1).padStart(3, "0")}`,
   }, res).catch(next);
 });
 

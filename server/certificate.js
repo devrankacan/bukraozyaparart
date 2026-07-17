@@ -34,8 +34,9 @@ function drawFallbackFrame(doc, width, height) {
   doc.rect(34, 34, width - 68, height - 68).lineWidth(0.75).stroke("#1f3a5f");
 }
 
-function streamCertificate({ name, eventTitle, eventDate, brandName }, writableStream) {
+function streamCertificate({ name, eventTitle, eventDate, eventLocation, eventTime, brandName, certificateNo }, writableStream) {
   const templatePath = findTemplate();
+  const brand = brandName || "BÜKÜ ART";
 
   let width = 841.89;
   let height = 595.28;
@@ -67,31 +68,63 @@ function streamCertificate({ name, eventTitle, eventDate, brandName }, writableS
 
     doc
       .font("Serif")
-      .fontSize(Math.round(height * 0.042))
+      .fontSize(Math.round(height * 0.02))
       .fillColor("#8a6520")
-      .text("KATILIM SERTİFİKASI", 0, height * 0.16, { align: "center", width, characterSpacing: 1 });
+      .text(`${brand.toUpperCase()} · ÇİNİ · TEZHİP · MİNYATÜR ATÖLYESİ`, 0, height * 0.085, { align: "center", width, characterSpacing: 1.5 });
+
+    doc
+      .font("Serif")
+      .fontSize(Math.round(height * 0.044))
+      .fillColor("#8a6520")
+      .text("KATILIM SERTİFİKASI", 0, height * 0.135, { align: "center", width, characterSpacing: 1 });
+
+    const ruleY = height * 0.205;
+    doc.moveTo(width * 0.42, ruleY).lineTo(width * 0.58, ruleY).lineWidth(1).stroke("#b8892f");
+
+    doc
+      .font("Serif")
+      .fontSize(Math.round(height * 0.024))
+      .fillColor("#6f6a5c")
+      .text("İşbu belge, aşağıda bilgileri yer alan katılımcıya takdim edilmiştir:", 0, height * 0.235, { align: "center", width });
 
     doc
       .font("Serif-Bold")
-      .fontSize(Math.round(height * 0.07))
+      .fontSize(Math.round(height * 0.065))
       .fillColor("#1f3a5f")
-      .text(name || "", 0, height * 0.29, { align: "center", width });
+      .text(name || "", 0, height * 0.3, { align: "center", width });
 
+    const underlineY = height * 0.375;
+    doc.moveTo(width * 0.4, underlineY).lineTo(width * 0.6, underlineY).lineWidth(0.75).stroke("#b8892f");
+
+    const locationPart = eventLocation ? ` ${eventLocation} adresinde` : "";
+    const timePart = eventTime ? `, ${eventTime} saatleri arasında` : "";
     const eventLine = eventTitle
-      ? `"${eventTitle}" atölyesine${eventDate ? ` ${formatDateLong(eventDate)} tarihinde` : ""} katılarak emek ve özenle tamamladığı çalışmaları onurlandırmak amacıyla düzenlenmiştir.`
-      : "atölyeye katılarak emek ve özenle tamamladığı çalışmaları onurlandırmak amacıyla düzenlenmiştir.";
+      ? `Katılımcı, "${eventTitle}" başlıklı atölye çalışmasına${eventDate ? ` ${formatDateLong(eventDate)} tarihinde` : ""}${locationPart}${timePart} katılmış; çalışma süresince gösterdiği emek, özen ve sanatsal duyarlılıkla belirlenen tüm uygulamaları başarıyla tamamlamıştır. İşbu sertifika, söz konusu katılımı ve gösterilen başarıyı belgelemek amacıyla ${brand} tarafından düzenlenmiştir.`
+      : `Katılımcı, atölye çalışmasına katılmış; çalışma süresince gösterdiği emek, özen ve sanatsal duyarlılıkla belirlenen tüm uygulamaları başarıyla tamamlamıştır. İşbu sertifika, söz konusu katılımı ve gösterilen başarıyı belgelemek amacıyla ${brand} tarafından düzenlenmiştir.`;
 
     doc
       .font("Serif")
-      .fontSize(Math.round(height * 0.03))
+      .fontSize(Math.round(height * 0.028))
       .fillColor("#2c2a24")
-      .text(eventLine, width * 0.16, height * 0.44, { align: "center", width: width * 0.68 });
+      .text(eventLine, width * 0.14, height * 0.42, { align: "center", width: width * 0.72, lineGap: height * 0.006 });
 
     doc
       .font("Serif")
-      .fontSize(Math.round(height * 0.022))
+      .fontSize(Math.round(height * 0.02))
       .fillColor("#8a6520")
-      .text(`Düzenlenme Tarihi: ${formatDateLong(new Date().toISOString().slice(0, 10))}`, width * 0.55, height * 0.9, { align: "right", width: width * 0.37 });
+      .text("Başarılarının devamını dileriz.", 0, height * 0.68, { align: "center", width });
+
+    doc
+      .font("Serif")
+      .fontSize(Math.round(height * 0.019))
+      .fillColor("#6f6a5c")
+      .text(`Sertifika No: ${certificateNo || "—"}`, width * 0.08, height * 0.885, { align: "left", width: width * 0.28 });
+
+    doc
+      .font("Serif")
+      .fontSize(Math.round(height * 0.019))
+      .fillColor("#6f6a5c")
+      .text(`Düzenlenme Tarihi: ${formatDateLong(new Date().toISOString().slice(0, 10))}`, width * 0.66, height * 0.885, { align: "right", width: width * 0.26 });
 
     doc.end();
   });
