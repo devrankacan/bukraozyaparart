@@ -409,60 +409,6 @@ p {
   }
 }
 
-/* ---------- Homepage quick links ---------- */
-
-.quick-nav-grid {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 24px;
-}
-
-.quick-nav-card {
-  display: flex;
-  flex-direction: column;
-  background: var(--card);
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
-  padding: 32px 24px;
-  box-shadow: var(--shadow-card);
-  transition: transform 0.25s, box-shadow 0.25s, border-color 0.25s;
-}
-
-.quick-nav-card:hover {
-  transform: translateY(-6px);
-  border-color: var(--border-gold);
-  box-shadow: var(--shadow-card-hover);
-}
-
-.quick-nav-card h3 {
-  font-size: 1.15rem;
-  margin: 0 0 8px;
-}
-
-.quick-nav-card p {
-  font-size: 0.9rem;
-  flex: 1;
-}
-
-.quick-nav-card span.link {
-  margin-top: 16px;
-  color: var(--gold-deep);
-  font-weight: 600;
-  font-size: 0.9rem;
-}
-
-@media (max-width: 859px) {
-  .quick-nav-grid {
-    grid-template-columns: repeat(2, 1fr);
-  }
-}
-
-@media (max-width: 520px) {
-  .quick-nav-grid {
-    grid-template-columns: 1fr;
-  }
-}
-
 /* ---------- About ---------- */
 
 .about-card {
