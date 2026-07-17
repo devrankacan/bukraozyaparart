@@ -10,6 +10,7 @@ const session = require("express-session");
 const bcrypt = require("bcryptjs");
 const multer = require("multer");
 const rateLimit = require("express-rate-limit");
+const { streamCertificate } = require("./certificate.js");
 
 const PORT = process.env.NODE_PORT || 4001;
 const SITE_URL = process.env.SITE_URL || "/";
@@ -26,9 +27,13 @@ if (!ADMIN_USERNAME || !ADMIN_PASSWORD_HASH || !SESSION_SECRET) {
 const SETTINGS_PATH = path.join(__dirname, "..", "content", "settings.json");
 const EVENTS_PATH = path.join(__dirname, "..", "content", "events.json");
 const GALLERY_PATH = path.join(__dirname, "..", "content", "gallery.json");
+const PARTICIPANTS_PATH = path.join(__dirname, "..", "content", "participants.json");
 const UPLOAD_DIR = path.join(__dirname, "..", "images", "uploads");
 
 fs.mkdirSync(UPLOAD_DIR, { recursive: true });
+if (!fs.existsSync(PARTICIPANTS_PATH)) {
+  fs.writeFileSync(PARTICIPANTS_PATH, JSON.stringify({ participants: [] }, null, 2) + "\n", "utf8");
+}
 
 const app = express();
 app.set("trust proxy", 1);
@@ -157,6 +162,12 @@ function layout(title, body) {
   .panel-logo { display:block; height: 96px; width:auto; margin: 0 auto; }
   .panel-logo-row { text-align:center; margin-bottom: 8px; }
   .top-bar .panel-logo { height: 64px; margin: 0; }
+  table.participants { width:100%; border-collapse: collapse; margin-top: 14px; font-size: .88rem; }
+  table.participants th, table.participants td { text-align:left; padding: 10px 8px; border-bottom: 1px solid var(--border); vertical-align: middle; }
+  table.participants th { color: var(--muted); font-weight:600; font-size:.78rem; text-transform: uppercase; letter-spacing:.03em; }
+  table.participants td.actions { display:flex; gap:8px; flex-wrap:wrap; }
+  table.participants .btn, table.participants button { margin-top:0; padding: 7px 14px; font-size:.8rem; }
+  select { width:100%; padding: 10px 12px; border-radius: 8px; border: 1px solid var(--border); background: var(--bg); color: var(--text); font-size:.92rem; font-family:inherit; }
 </style>
 </head>
 <body>
@@ -172,6 +183,7 @@ function tabsNav(active) {
     { key: "ayarlar", label: "Ayarlar", href: `${BASE}/ayarlar` },
     { key: "etkinlikler", label: "Etkinlikler", href: `${BASE}/etkinlikler` },
     { key: "galeri", label: "Galeri", href: `${BASE}/galeri` },
+    { key: "katilimcilar", label: "Katılımcılar", href: `${BASE}/katilimcilar` },
   ];
   return `<div class="tabs">${tabs.map((t) => `<a href="${t.href}" class="${t.key === active ? "active" : ""}">${t.label}</a>`).join("")}</div>`;
 }
@@ -362,6 +374,99 @@ app.get(`${BASE}/galeri`, requireAuth, (req, res) => {
     </div>
   `;
   res.send(shell("galeri", "Galeri", body, req.query.saved));
+});
+
+app.get(`${BASE}/katilimcilar`, requireAuth, (req, res) => {
+  const participantsData = readJson(PARTICIPANTS_PATH);
+  const eventsData = readJson(EVENTS_PATH);
+  const events = eventsData.events || [];
+
+  const eventTitleFor = (idx) => {
+    const ev = events[Number(idx)];
+    return ev ? ev.title : "(silinmiş etkinlik)";
+  };
+
+  const rows = (participantsData.participants || []).map((p, i) => `
+    <tr>
+      <td>${escapeHtml(p.name)}</td>
+      <td>${escapeHtml(eventTitleFor(p.eventIndex))}</td>
+      <td class="actions">
+        <a class="btn" href="${BASE}/katilimcilar/${i}/pdf">Sertifika İndir (PDF)</a>
+        <form method="POST" action="${BASE}/katilimcilar/${i}/delete" onsubmit="return confirm('Bu katılımcıyı silmek istediğinize emin misiniz?');">
+          <button type="submit" class="danger">Sil</button>
+        </form>
+      </td>
+    </tr>
+  `).join("");
+
+  const table = rows
+    ? `<table class="participants"><thead><tr><th>Ad Soyad</th><th>Etkinlik</th><th>İşlemler</th></tr></thead><tbody>${rows}</tbody></table>`
+    : "<p>Henüz katılımcı eklenmemiş.</p>";
+
+  const eventOptions = events.map((ev, i) => `<option value="${i}">${escapeHtml(ev.title)}${ev.date ? ` (${escapeHtml(ev.date)})` : ""}</option>`).join("")
+    || `<option value="" disabled>Önce bir etkinlik ekleyin</option>`;
+
+  const body = `
+    <div class="card">
+      <h2>Katılımcılar</h2>
+      ${table}
+    </div>
+
+    <div class="card">
+      <h2>Yeni Katılımcı Ekle</h2>
+      <form method="POST" action="${BASE}/katilimcilar">
+        <label>Ad Soyad</label>
+        <input type="text" name="name" required>
+        <label>Etkinlik</label>
+        <select name="eventIndex" required>${eventOptions}</select>
+        <button type="submit">Katılımcıyı Ekle</button>
+      </form>
+    </div>
+  `;
+  res.send(shell("katilimcilar", "Katılımcılar", body, req.query.saved));
+});
+
+app.post(`${BASE}/katilimcilar`, requireAuth, (req, res) => {
+  const participantsData = readJson(PARTICIPANTS_PATH);
+  participantsData.participants = participantsData.participants || [];
+  participantsData.participants.push({
+    name: (req.body.name || "").trim(),
+    eventIndex: Number(req.body.eventIndex),
+  });
+  writeJson(PARTICIPANTS_PATH, participantsData);
+  res.redirect(`${BASE}/katilimcilar?saved=1`);
+});
+
+app.get(`${BASE}/katilimcilar/:index/pdf`, requireAuth, (req, res, next) => {
+  const idx = Number(req.params.index);
+  const participantsData = readJson(PARTICIPANTS_PATH);
+  const participant = participantsData.participants && participantsData.participants[idx];
+  if (!participant) return res.redirect(`${BASE}/katilimcilar`);
+
+  const eventsData = readJson(EVENTS_PATH);
+  const settings = readJson(SETTINGS_PATH);
+  const event = (eventsData.events || [])[participant.eventIndex];
+
+  const fileSafeName = (participant.name || "sertifika").replace(/[^\p{L}\p{N}]+/gu, "-").replace(/^-+|-+$/g, "") || "sertifika";
+  res.setHeader("Content-Type", "application/pdf");
+  res.setHeader("Content-Disposition", `attachment; filename="${fileSafeName}-sertifika.pdf"`);
+
+  streamCertificate({
+    name: participant.name,
+    eventTitle: event ? event.title : "",
+    eventDate: event ? event.date : "",
+    brandName: settings.brandName,
+  }, res).catch(next);
+});
+
+app.post(`${BASE}/katilimcilar/:index/delete`, requireAuth, (req, res) => {
+  const idx = Number(req.params.index);
+  const participantsData = readJson(PARTICIPANTS_PATH);
+  if (participantsData.participants && participantsData.participants[idx]) {
+    participantsData.participants.splice(idx, 1);
+    writeJson(PARTICIPANTS_PATH, participantsData);
+  }
+  res.redirect(`${BASE}/katilimcilar?saved=1`);
 });
 
 app.post(`${BASE}/settings`, requireAuth, (req, res) => {
