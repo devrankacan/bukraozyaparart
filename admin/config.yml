@@ -28,7 +28,6 @@ collections:
           - { label: "E-posta", name: "email", widget: "string", required: false }
           - { label: "Konum", name: "location", widget: "string", required: false }
           - { label: "Hero Buton Metni", name: "heroButtonText", widget: "string", required: false }
-          - { label: "WhatsApp Buton Metni", name: "whatsappButtonText", widget: "string", required: false }
           - { label: "İletişim Bölümü Notu", name: "footerNote", widget: "text", required: false }
 
   - name: "events"

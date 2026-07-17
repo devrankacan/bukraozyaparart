@@ -78,11 +78,6 @@
     const heroBtn = document.querySelector(".hero-actions .btn-gold");
     if (heroBtn && settings.heroButtonText) heroBtn.textContent = settings.heroButtonText;
 
-    document.querySelectorAll("#header-whatsapp, #hero-whatsapp, #contact-whatsapp").forEach((el) => {
-      const label = el.querySelector(".btn-label");
-      if (label && settings.whatsappButtonText) label.textContent = settings.whatsappButtonText;
-    });
-
     return settings;
   }
 
