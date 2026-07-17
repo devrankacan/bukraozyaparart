@@ -220,6 +220,76 @@
     });
   }
 
+  function setupSearch(eventsData) {
+    const toggle = $("#search-toggle");
+    const panel = $("#search-panel");
+    const input = $("#search-input");
+    const results = $("#search-results");
+    if (!toggle || !panel || !input || !results) return;
+
+    const pages = [
+      { title: "Hakkımızda", description: "Atölyemizi ve çini/tezhip sanatına bakışımızı tanıyın.", url: "/hakkimizda.html", type: "Sayfa" },
+      { title: "Etkinlikler", description: "Yaklaşan workshop tarihlerine göz atın, yerinizi ayırtın.", url: "/etkinlikler.html", type: "Sayfa" },
+      { title: "Galeri", description: "Atölyeden ve tamamlanan çalışmalardan kareler.", url: "/galeri.html", type: "Sayfa" },
+      { title: "İletişim", description: "WhatsApp ve Instagram üzerinden bize ulaşın.", url: "/iletisim.html", type: "Sayfa" },
+    ];
+
+    const events = (eventsData.events || [])
+      .filter((e) => e.active !== false)
+      .map((ev) => ({
+        title: ev.title,
+        description: [ev.date ? formatDate(ev.date) : "", ev.location].filter(Boolean).join(" · "),
+        url: eventDetailUrl(ev, eventsData.events),
+        type: "Etkinlik",
+      }));
+
+    const searchIndex = pages.concat(events);
+
+    function open() {
+      panel.classList.add("open");
+      input.focus();
+    }
+
+    function close() {
+      panel.classList.remove("open");
+    }
+
+    toggle.addEventListener("click", () => {
+      if (panel.classList.contains("open")) close();
+      else open();
+    });
+
+    document.addEventListener("click", (e) => {
+      if (panel.classList.contains("open") && !panel.contains(e.target) && !toggle.contains(e.target)) close();
+    });
+
+    document.addEventListener("keydown", (e) => {
+      if (e.key === "Escape") close();
+    });
+
+    input.addEventListener("input", () => {
+      const q = input.value.trim().toLocaleLowerCase("tr");
+      if (!q) {
+        results.innerHTML = "";
+        return;
+      }
+      const matches = searchIndex.filter((item) =>
+        item.title.toLocaleLowerCase("tr").includes(q) || (item.description || "").toLocaleLowerCase("tr").includes(q)
+      );
+      if (matches.length === 0) {
+        results.innerHTML = `<div class="search-empty">Sonuç bulunamadı.</div>`;
+        return;
+      }
+      results.innerHTML = matches.map((item) => `
+        <a href="${item.url}" class="search-result">
+          <span class="type">${escapeHtml(item.type)}</span>
+          <span class="title">${escapeHtml(item.title)}</span>
+          ${item.description ? `<span class="desc">${escapeHtml(item.description)}</span>` : ""}
+        </a>
+      `).join("");
+    });
+  }
+
   async function init() {
     setupNav();
     $("#year").textContent = new Date().getFullYear();
@@ -234,6 +304,7 @@
       renderEvents(eventsData, settings);
       renderGallery(galleryData, settings);
       renderEventDetail(eventsData, settings);
+      setupSearch(eventsData);
     } catch (err) {
       console.error("İçerik yüklenirken hata oluştu:", err);
       const grid = $("#events-grid");

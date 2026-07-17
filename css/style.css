@@ -232,6 +232,110 @@ p {
   flex-shrink: 0;
 }
 
+.search-wrap {
+  position: relative;
+}
+
+.search-toggle {
+  background: none;
+  border: none;
+  color: var(--navy);
+  cursor: pointer;
+  padding: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 999px;
+  transition: background 0.2s, color 0.2s;
+}
+
+.search-toggle:hover {
+  background: var(--bg-alt);
+  color: var(--gold-deep);
+}
+
+.search-panel {
+  display: none;
+  position: absolute;
+  top: calc(100% + 14px);
+  right: 0;
+  width: 340px;
+  max-width: 88vw;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  box-shadow: var(--shadow-card-hover);
+  padding: 16px;
+  z-index: 200;
+}
+
+.search-panel.open {
+  display: block;
+}
+
+.search-panel input[type="search"] {
+  width: 100%;
+  padding: 10px 16px;
+  border-radius: 999px;
+  border: 1px solid var(--border);
+  background: var(--bg);
+  color: var(--text);
+  font-size: 0.92rem;
+  font-family: inherit;
+}
+
+.search-panel input[type="search"]:focus {
+  outline: none;
+  border-color: var(--border-gold);
+}
+
+.search-results {
+  margin-top: 10px;
+  max-height: 320px;
+  overflow-y: auto;
+}
+
+.search-result {
+  display: block;
+  padding: 10px 10px;
+  border-radius: 8px;
+  text-decoration: none;
+}
+
+.search-result:hover {
+  background: var(--bg-alt);
+}
+
+.search-result .type {
+  display: block;
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--gold-deep);
+  font-weight: 600;
+  margin-bottom: 2px;
+}
+
+.search-result .title {
+  display: block;
+  font-family: var(--serif);
+  font-size: 0.98rem;
+  color: var(--navy);
+}
+
+.search-result .desc {
+  display: block;
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  margin-top: 2px;
+}
+
+.search-empty {
+  padding: 10px;
+  font-size: 0.88rem;
+  color: var(--text-muted);
+}
+
 .header-cta {
   display: none;
 }
@@ -279,6 +383,14 @@ p {
   }
   .nav-links {
     top: 88px;
+  }
+  .search-panel {
+    position: fixed;
+    top: 100px;
+    left: 16px;
+    right: 16px;
+    width: auto;
+    max-width: none;
   }
 }
 
