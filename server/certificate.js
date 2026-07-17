@@ -34,7 +34,7 @@ function drawFallbackFrame(doc, width, height) {
   doc.rect(34, 34, width - 68, height - 68).lineWidth(0.75).stroke("#1f3a5f");
 }
 
-function streamCertificate({ name, eventTitle, eventDate, eventLocation, eventTime, brandName, certificateNo }, writableStream) {
+function streamCertificate({ name, eventTitle, eventDate, eventTime, brandName, certificateNo }, writableStream) {
   const templatePath = findTemplate();
   const brand = brandName || "BÜKÜ ART";
 
@@ -68,9 +68,9 @@ function streamCertificate({ name, eventTitle, eventDate, eventLocation, eventTi
 
     doc
       .font("Serif")
-      .fontSize(Math.round(height * 0.044))
+      .fontSize(Math.round(height * 0.06))
       .fillColor("#8a6520")
-      .text("KATILIM SERTİFİKASI", 0, height * 0.11, { align: "center", width, characterSpacing: 1 });
+      .text("KATILIM SERTİFİKASI", 0, height * 0.1, { align: "center", width, characterSpacing: 1 });
 
     const ruleY = height * 0.205;
     doc.moveTo(width * 0.42, ruleY).lineTo(width * 0.58, ruleY).lineWidth(1).stroke("#b8892f");
@@ -90,10 +90,9 @@ function streamCertificate({ name, eventTitle, eventDate, eventLocation, eventTi
     const underlineY = height * 0.375;
     doc.moveTo(width * 0.4, underlineY).lineTo(width * 0.6, underlineY).lineWidth(0.75).stroke("#b8892f");
 
-    const locationPart = eventLocation ? ` ${eventLocation} adresinde` : "";
     const timePart = eventTime ? `, ${eventTime} saatleri arasında` : "";
     const eventLine = eventTitle
-      ? `Katılımcı, "${eventTitle}" başlıklı atölye çalışmasına${eventDate ? ` ${formatDateLong(eventDate)} tarihinde` : ""}${locationPart}${timePart} katılmış; çalışma süresince gösterdiği emek, özen ve sanatsal duyarlılıkla belirlenen tüm uygulamaları başarıyla tamamlamıştır. İşbu sertifika, söz konusu katılımı ve gösterilen başarıyı belgelemek amacıyla ${brand} tarafından düzenlenmiştir.`
+      ? `Katılımcı, "${eventTitle}" başlıklı atölye çalışmasına${eventDate ? ` ${formatDateLong(eventDate)} tarihinde` : ""}${timePart} katılmış; çalışma süresince gösterdiği emek, özen ve sanatsal duyarlılıkla belirlenen tüm uygulamaları başarıyla tamamlamıştır. İşbu sertifika, söz konusu katılımı ve gösterilen başarıyı belgelemek amacıyla ${brand} tarafından düzenlenmiştir.`
       : `Katılımcı, atölye çalışmasına katılmış; çalışma süresince gösterdiği emek, özen ve sanatsal duyarlılıkla belirlenen tüm uygulamaları başarıyla tamamlamıştır. İşbu sertifika, söz konusu katılımı ve gösterilen başarıyı belgelemek amacıyla ${brand} tarafından düzenlenmiştir.`;
 
     doc
