@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Etkinlik | BÜKÜ ART</title>
+<meta name="description" content="BÜKÜ ART workshop etkinlik detayları ve WhatsApp'tan rezervasyon.">
+<link rel="icon" type="image/svg+xml" href="/assets/logo.svg">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=Poppins:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+
+<header class="site-header">
+  <div class="container">
+    <a href="/" class="brand">
+      <img src="/assets/logo-full.png" alt="Büku Art logosu" class="brand-logo-full">
+      <span id="brand-name" class="sr-only">BÜKÜ ART</span>
+    </a>
+    <nav class="nav-links" id="nav-links">
+      <a href="/hakkimizda.html">Hakkımızda</a>
+      <a href="/etkinlikler.html">Etkinlikler</a>
+      <a href="/galeri.html">Galeri</a>
+      <a href="/iletisim.html">İletişim</a>
+    </nav>
+    <a href="#" id="header-whatsapp" class="btn btn-whatsapp header-cta" target="_blank" rel="noopener">
+      <svg class="whatsapp-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="18" height="18" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.297-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/><path d="M12.004 2c-5.514 0-9.997 4.478-9.997 9.997 0 1.763.463 3.483 1.343 4.997L2 22l5.146-1.35a9.96 9.96 0 0 0 4.858 1.237h.004c5.514 0 9.996-4.479 9.996-9.998C21.996 6.478 17.518 2 12.004 2Zm0 18.15h-.003a8.13 8.13 0 0 1-4.15-1.135l-.298-.177-3.06.803.817-2.982-.194-.306a8.12 8.12 0 0 1-1.246-4.356c0-4.49 3.653-8.144 8.14-8.144 2.175 0 4.219.848 5.756 2.388a8.086 8.086 0 0 1 2.383 5.76c0 4.49-3.653 8.15-8.145 8.15Z"/></svg>
+      <span class="btn-label">Rezervasyon Oluştur</span>
+    </a>
+    <button class="menu-toggle" id="menu-toggle" aria-label="Menüyü aç">☰</button>
+  </div>
+</header>
+
+<main>
+  <section class="section" style="padding-top:160px;">
+    <div class="container">
+      <a href="/etkinlikler.html" class="back-link">← Tüm Etkinlikler</a>
+      <div id="event-detail">
+        <!-- injected by js/main.js -->
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer class="site-footer">
+  <div class="container footer-grid">
+    <div class="footer-brand">
+      <a href="/" class="brand">
+        <img src="/assets/logo-full.png" alt="Büku Art logosu" class="brand-logo-full">
+        <span id="footer-brand-name" class="sr-only">BÜKÜ ART</span>
+      </a>
+      <p id="footer-tagline-text">Tezhip Sanatı ✨ Çini ✨ Minyatür Workshop</p>
+    </div>
+    <div class="footer-col">
+      <h4>Hızlı Bağlantılar</h4>
+      <nav>
+        <a href="/hakkimizda.html">Hakkımızda</a>
+        <a href="/etkinlikler.html">Etkinlikler</a>
+        <a href="/galeri.html">Galeri</a>
+        <a href="/iletisim.html">İletişim</a>
+      </nav>
+    </div>
+    <div class="footer-col">
+      <h4>İletişim</h4>
+      <span id="footer-location"></span>
+      <span id="footer-email"></span>
+      <a href="#" id="footer-instagram" target="_blank" rel="noopener">Instagram</a>
+      <a href="#" id="footer-whatsapp" target="_blank" rel="noopener">Rezervasyon Oluştur</a>
+    </div>
+  </div>
+  <div class="container footer-bottom">
+    <p>&copy; <span id="year"></span> <span id="footer-brand">BÜKÜ ART</span>. Tüm hakları saklıdır.</p>
+  </div>
+</footer>
+
+<a href="#" id="floating-whatsapp" class="floating-whatsapp" target="_blank" rel="noopener" aria-label="WhatsApp'tan yaz">
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="28" height="28" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.297-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/><path d="M12.004 2c-5.514 0-9.997 4.478-9.997 9.997 0 1.763.463 3.483 1.343 4.997L2 22l5.146-1.35a9.96 9.96 0 0 0 4.858 1.237h.004c5.514 0 9.996-4.479 9.996-9.998C21.996 6.478 17.518 2 12.004 2Zm0 18.15h-.003a8.13 8.13 0 0 1-4.15-1.135l-.298-.177-3.06.803.817-2.982-.194-.306a8.12 8.12 0 0 1-1.246-4.356c0-4.49 3.653-8.144 8.14-8.144 2.175 0 4.219.848 5.756 2.388a8.086 8.086 0 0 1 2.383 5.76c0 4.49-3.653 8.15-8.145 8.15Z"/></svg>
+</a>
+
+<script src="/js/main.js"></script>
+</body>
+</html>

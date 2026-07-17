@@ -81,6 +81,23 @@ function escapeHtml(str) {
   }[c]));
 }
 
+const TR_MAP = { ç: "c", Ç: "c", ğ: "g", Ğ: "g", ı: "i", İ: "i", ö: "o", Ö: "o", ş: "s", Ş: "s", ü: "u", Ü: "u" };
+
+function slugify(str, existingSlugs) {
+  const base = String(str || "etkinlik")
+    .replace(/[çÇğĞıİöÖşŞüÜ]/g, (c) => TR_MAP[c])
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "") || "etkinlik";
+  let slug = base;
+  let n = 2;
+  while (existingSlugs.includes(slug)) {
+    slug = `${base}-${n}`;
+    n += 1;
+  }
+  return slug;
+}
+
 function layout(title, body) {
   return `<!DOCTYPE html>
 <html lang="tr">
@@ -113,15 +130,27 @@ function layout(title, body) {
   button, .btn { display:inline-block; margin-top:16px; padding: 10px 22px; border-radius: 999px; border:none;
     background: var(--navy); color: var(--bg); font-weight:600; cursor:pointer; font-size:.9rem; text-decoration:none; }
   button.danger { background: #b6435a; color:#fff; }
-  .event-item { border-top: 1px solid var(--border); padding-top: 18px; margin-top: 18px; }
-  .event-item:first-of-type { border-top:none; padding-top:0; margin-top:0; }
+  details.event-item { border: 1px solid var(--border); border-radius: 10px; margin-top: 14px; padding: 0; }
+  details.event-item:first-of-type { margin-top: 0; }
+  details.event-item summary {
+    cursor: pointer; padding: 14px 18px; font-weight: 600; color: var(--navy);
+    display: flex; justify-content: space-between; align-items: center; gap: 12px;
+  }
+  details.event-item summary .muted { color: var(--muted); font-weight: 400; font-size: .85rem; }
+  details.event-item .event-item-body { padding: 4px 18px 18px; border-top: 1px solid var(--border); }
   .gallery-grid-admin { display:flex; flex-wrap:wrap; gap:16px; }
   .gallery-item-admin { width: 140px; }
   .gallery-item-admin img { width:140px; height:140px; object-fit:cover; border-radius:8px; border:1px solid var(--border); }
   .gallery-item-admin form { margin-top:6px; }
   .gallery-item-admin button { margin-top:6px; padding:6px 14px; font-size:.78rem; width:100%; }
-  .top-bar { display:flex; justify-content:space-between; align-items:center; margin-bottom:24px; }
+  .top-bar { display:flex; justify-content:space-between; align-items:center; margin-bottom:20px; }
   .top-bar a { color: var(--gold-deep); font-size:.85rem; }
+  .tabs { display:flex; gap:6px; margin-bottom:24px; border-bottom: 1px solid var(--border); flex-wrap: wrap; }
+  .tabs a {
+    padding: 10px 18px; font-size: .92rem; font-weight: 600; color: var(--muted);
+    text-decoration: none; border-bottom: 2px solid transparent; margin-bottom: -1px;
+  }
+  .tabs a.active { color: var(--navy); border-bottom-color: var(--gold); }
   .flash { background:#eaf3e6; border:1px solid #9dc98d; color:#2f5b26; padding:10px 16px; border-radius:8px; margin-bottom:20px; font-size:.9rem; }
   .thumb { max-width: 120px; border-radius: 6px; border:1px solid var(--border); display:block; margin-top:8px; }
   .site-link { font-size:.82rem; color: var(--muted); }
@@ -136,6 +165,32 @@ ${body}
 </div>
 </body>
 </html>`;
+}
+
+function tabsNav(active) {
+  const tabs = [
+    { key: "ayarlar", label: "Ayarlar", href: `${BASE}/ayarlar` },
+    { key: "etkinlikler", label: "Etkinlikler", href: `${BASE}/etkinlikler` },
+    { key: "galeri", label: "Galeri", href: `${BASE}/galeri` },
+  ];
+  return `<div class="tabs">${tabs.map((t) => `<a href="${t.href}" class="${t.key === active ? "active" : ""}">${t.label}</a>`).join("")}</div>`;
+}
+
+function shell(activeTab, title, bodyHtml, saved) {
+  const savedFlash = saved ? `<div class="flash">Değişiklikler kaydedildi.</div>` : "";
+  return layout(title, `
+    <div class="top-bar">
+      <img class="panel-logo" src="/assets/logo-full.png" alt="Büku Art">
+      <div>
+        <a class="site-link" href="${escapeHtml(SITE_URL)}" target="_blank">Siteyi Görüntüle ↗</a>
+        &nbsp;·&nbsp;
+        <form method="POST" action="${BASE}/logout" style="display:inline;"><button type="submit" style="margin:0;padding:6px 16px;">Çıkış</button></form>
+      </div>
+    </div>
+    ${tabsNav(activeTab)}
+    ${savedFlash}
+    ${bodyHtml}
+  `);
 }
 
 function requireAuth(req, res, next) {
@@ -168,7 +223,7 @@ app.post(`${BASE}/login`, loginLimiter, (req, res) => {
   const validPass = validUser && bcrypt.compareSync(password || "", ADMIN_PASSWORD_HASH);
   if (validUser && validPass) {
     req.session.authed = true;
-    return res.redirect(BASE);
+    return res.redirect(`${BASE}/ayarlar`);
   }
   res.redirect(`${BASE}/login?error=1`);
 });
@@ -177,67 +232,11 @@ app.post(`${BASE}/logout`, (req, res) => {
   req.session.destroy(() => res.redirect(`${BASE}/login`));
 });
 
-app.get(BASE, requireAuth, (req, res) => {
+app.get(BASE, requireAuth, (req, res) => res.redirect(`${BASE}/ayarlar`));
+
+app.get(`${BASE}/ayarlar`, requireAuth, (req, res) => {
   const settings = readJson(SETTINGS_PATH);
-  const eventsData = readJson(EVENTS_PATH);
-  const galleryData = readJson(GALLERY_PATH);
-  const saved = req.query.saved ? `<div class="flash">Değişiklikler kaydedildi.</div>` : "";
-
-  const eventsHtml = (eventsData.events || []).map((ev, i) => `
-    <div class="event-item">
-      <form method="POST" action="${BASE}/events/${i}">
-        <div class="row">
-          <div><label>Başlık</label><input type="text" name="title" value="${escapeHtml(ev.title)}" required></div>
-          <div><label>Tarih</label><input type="date" name="date" value="${escapeHtml(ev.date)}" required></div>
-        </div>
-        <div class="row">
-          <div><label>Saat</label><input type="text" name="time" value="${escapeHtml(ev.time)}"></div>
-          <div><label>Konum</label><input type="text" name="location" value="${escapeHtml(ev.location)}"></div>
-        </div>
-        <div class="row">
-          <div><label>Kontenjan</label><input type="text" name="capacity" value="${escapeHtml(ev.capacity)}"></div>
-          <div><label>Ücret</label><input type="text" name="price" value="${escapeHtml(ev.price)}"></div>
-        </div>
-        <label>Açıklama</label>
-        <textarea name="description">${escapeHtml(ev.description)}</textarea>
-        <label>Özel WhatsApp Mesajı (boş bırakılırsa otomatik oluşur)</label>
-        <input type="text" name="whatsappMessage" value="${escapeHtml(ev.whatsappMessage)}">
-        <input type="hidden" name="image" value="${escapeHtml(ev.image)}">
-        ${ev.image ? `<img class="thumb" src="${escapeHtml(ev.image)}" alt="">` : ""}
-        <div class="checkbox"><input type="checkbox" name="active" id="active-${i}" ${ev.active !== false ? "checked" : ""}><label for="active-${i}" style="margin:0;">Sitede göster (aktif)</label></div>
-        <button type="submit">Kaydet</button>
-      </form>
-      <form method="POST" action="${BASE}/events/${i}/image" enctype="multipart/form-data" style="margin-top:10px;">
-        <label>Görsel Değiştir</label>
-        <input type="file" name="image" accept="image/*">
-        <button type="submit">Görseli Yükle</button>
-      </form>
-      <form method="POST" action="${BASE}/events/${i}/delete" style="margin-top:6px;" onsubmit="return confirm('Bu etkinliği silmek istediğinize emin misiniz?');">
-        <button type="submit" class="danger">Etkinliği Sil</button>
-      </form>
-    </div>
-  `).join("") || "<p>Henüz etkinlik eklenmemiş.</p>";
-
-  const galleryHtml = (galleryData.images || []).map((img, i) => `
-    <div class="gallery-item-admin">
-      <img src="${escapeHtml(img.image)}" alt="${escapeHtml(img.caption || "")}">
-      <form method="POST" action="${BASE}/gallery/${i}/delete" onsubmit="return confirm('Bu görseli silmek istediğinize emin misiniz?');">
-        <button type="submit" class="danger">Sil</button>
-      </form>
-    </div>
-  `).join("") || "<p>Henüz galeri görseli eklenmemiş. Anasayfadaki \"Hakkımızda\" bölümünde bu görseller Instagram gönderileriniz gibi gösterilir.</p>";
-
-  res.send(layout("Panel", `
-    <div class="top-bar">
-      <img class="panel-logo" src="/assets/logo-full.png" alt="Büku Art">
-      <div>
-        <a class="site-link" href="${escapeHtml(SITE_URL)}" target="_blank">Siteyi Görüntüle ↗</a>
-        &nbsp;·&nbsp;
-        <form method="POST" action="${BASE}/logout" style="display:inline;"><button type="submit" style="margin:0;padding:6px 16px;">Çıkış</button></form>
-      </div>
-    </div>
-    ${saved}
-
+  const body = `
     <div class="card">
       <h2>Site Ayarları</h2>
       <form method="POST" action="${BASE}/settings">
@@ -260,22 +259,55 @@ app.get(BASE, requireAuth, (req, res) => {
         <button type="submit">Ayarları Kaydet</button>
       </form>
     </div>
+  `;
+  res.send(shell("ayarlar", "Ayarlar", body, req.query.saved));
+});
 
+app.get(`${BASE}/etkinlikler`, requireAuth, (req, res) => {
+  const eventsData = readJson(EVENTS_PATH);
+
+  const eventsHtml = (eventsData.events || []).map((ev, i) => `
+    <details class="event-item">
+      <summary>${escapeHtml(ev.title) || "(Başlıksız)"} <span class="muted">${escapeHtml(ev.date)}${ev.active === false ? " · pasif" : ""}</span></summary>
+      <div class="event-item-body">
+        <form method="POST" action="${BASE}/events/${i}">
+          <div class="row">
+            <div><label>Başlık</label><input type="text" name="title" value="${escapeHtml(ev.title)}" required></div>
+            <div><label>Tarih</label><input type="date" name="date" value="${escapeHtml(ev.date)}" required></div>
+          </div>
+          <div class="row">
+            <div><label>Saat</label><input type="text" name="time" value="${escapeHtml(ev.time)}"></div>
+            <div><label>Konum</label><input type="text" name="location" value="${escapeHtml(ev.location)}"></div>
+          </div>
+          <div class="row">
+            <div><label>Kontenjan</label><input type="text" name="capacity" value="${escapeHtml(ev.capacity)}"></div>
+            <div><label>Ücret</label><input type="text" name="price" value="${escapeHtml(ev.price)}"></div>
+          </div>
+          <label>Açıklama</label>
+          <textarea name="description">${escapeHtml(ev.description)}</textarea>
+          <label>Özel WhatsApp Mesajı (boş bırakılırsa otomatik oluşur)</label>
+          <input type="text" name="whatsappMessage" value="${escapeHtml(ev.whatsappMessage)}">
+          <input type="hidden" name="image" value="${escapeHtml(ev.image)}">
+          ${ev.image ? `<img class="thumb" src="${escapeHtml(ev.image)}" alt="">` : ""}
+          <div class="checkbox"><input type="checkbox" name="active" id="active-${i}" ${ev.active !== false ? "checked" : ""}><label for="active-${i}" style="margin:0;">Sitede göster (aktif)</label></div>
+          <button type="submit">Kaydet</button>
+        </form>
+        <form method="POST" action="${BASE}/events/${i}/image" enctype="multipart/form-data" style="margin-top:10px;">
+          <label>Görsel Değiştir</label>
+          <input type="file" name="image" accept="image/*">
+          <button type="submit">Görseli Yükle</button>
+        </form>
+        <form method="POST" action="${BASE}/events/${i}/delete" style="margin-top:6px;" onsubmit="return confirm('Bu etkinliği silmek istediğinize emin misiniz?');">
+          <button type="submit" class="danger">Etkinliği Sil</button>
+        </form>
+      </div>
+    </details>
+  `).join("") || "<p>Henüz etkinlik eklenmemiş.</p>";
+
+  const body = `
     <div class="card">
       <h2>Etkinlikler</h2>
       ${eventsHtml}
-    </div>
-
-    <div class="card">
-      <h2>Galeri (Anasayfa "Hakkımızda" Bölümü)</h2>
-      <div class="gallery-grid-admin">${galleryHtml}</div>
-      <form method="POST" action="${BASE}/gallery" enctype="multipart/form-data" style="margin-top:20px;">
-        <label>Yeni Görsel</label>
-        <input type="file" name="image" accept="image/*" required>
-        <label>Açıklama (opsiyonel, alt metin olarak kullanılır)</label>
-        <input type="text" name="caption">
-        <button type="submit">Galeriye Ekle</button>
-      </form>
     </div>
 
     <div class="card">
@@ -300,7 +332,36 @@ app.get(BASE, requireAuth, (req, res) => {
         <button type="submit">Etkinliği Ekle</button>
       </form>
     </div>
-  `));
+  `;
+  res.send(shell("etkinlikler", "Etkinlikler", body, req.query.saved));
+});
+
+app.get(`${BASE}/galeri`, requireAuth, (req, res) => {
+  const galleryData = readJson(GALLERY_PATH);
+
+  const galleryHtml = (galleryData.images || []).map((img, i) => `
+    <div class="gallery-item-admin">
+      <img src="${escapeHtml(img.image)}" alt="${escapeHtml(img.caption || "")}">
+      <form method="POST" action="${BASE}/gallery/${i}/delete" onsubmit="return confirm('Bu görseli silmek istediğinize emin misiniz?');">
+        <button type="submit" class="danger">Sil</button>
+      </form>
+    </div>
+  `).join("") || "<p>Henüz galeri görseli eklenmemiş. Galeri sayfasında bu görseller Instagram gönderileriniz gibi gösterilir.</p>";
+
+  const body = `
+    <div class="card">
+      <h2>Galeri</h2>
+      <div class="gallery-grid-admin">${galleryHtml}</div>
+      <form method="POST" action="${BASE}/gallery" enctype="multipart/form-data" style="margin-top:20px;">
+        <label>Yeni Görsel</label>
+        <input type="file" name="image" accept="image/*" required>
+        <label>Açıklama (opsiyonel, alt metin olarak kullanılır)</label>
+        <input type="text" name="caption">
+        <button type="submit">Galeriye Ekle</button>
+      </form>
+    </div>
+  `;
+  res.send(shell("galeri", "Galeri", body, req.query.saved));
 });
 
 app.post(`${BASE}/settings`, requireAuth, (req, res) => {
@@ -317,14 +378,16 @@ app.post(`${BASE}/settings`, requireAuth, (req, res) => {
     footerNote: req.body.footerNote || "",
   };
   writeJson(SETTINGS_PATH, updated);
-  res.redirect(`${BASE}?saved=1`);
+  res.redirect(`${BASE}/ayarlar?saved=1`);
 });
 
 app.post(`${BASE}/events`, requireAuth, upload.single("image"), (req, res) => {
   const eventsData = readJson(EVENTS_PATH);
-  const image = req.file ? `/images/uploads/${req.file.filename}` : "/assets/placeholder-event.svg";
   eventsData.events = eventsData.events || [];
+  const image = req.file ? `/images/uploads/${req.file.filename}` : "/assets/placeholder-event.svg";
+  const slug = slugify(req.body.title, eventsData.events.map((e) => e.slug).filter(Boolean));
   eventsData.events.push({
+    slug,
     title: req.body.title || "",
     date: req.body.date || "",
     time: req.body.time || "",
@@ -337,15 +400,20 @@ app.post(`${BASE}/events`, requireAuth, upload.single("image"), (req, res) => {
     whatsappMessage: "",
   });
   writeJson(EVENTS_PATH, eventsData);
-  res.redirect(`${BASE}?saved=1`);
+  res.redirect(`${BASE}/etkinlikler?saved=1`);
 });
 
 app.post(`${BASE}/events/:index`, requireAuth, (req, res) => {
   const idx = Number(req.params.index);
   const eventsData = readJson(EVENTS_PATH);
-  if (!eventsData.events || !eventsData.events[idx]) return res.redirect(BASE);
+  if (!eventsData.events || !eventsData.events[idx]) return res.redirect(`${BASE}/etkinlikler`);
+  // Eski (slug eklenmeden önce oluşturulmuş) etkinliklere ilk düzenlemede
+  // kalıcı bir slug atanır; mevcut slug asla değiştirilmez (link kırılmasın).
+  const slug = eventsData.events[idx].slug
+    || slugify(req.body.title, eventsData.events.map((e) => e.slug).filter(Boolean));
   eventsData.events[idx] = {
     ...eventsData.events[idx],
+    slug,
     title: req.body.title || "",
     date: req.body.date || "",
     time: req.body.time || "",
@@ -357,18 +425,18 @@ app.post(`${BASE}/events/:index`, requireAuth, (req, res) => {
     active: req.body.active === "on",
   };
   writeJson(EVENTS_PATH, eventsData);
-  res.redirect(`${BASE}?saved=1`);
+  res.redirect(`${BASE}/etkinlikler?saved=1`);
 });
 
 app.post(`${BASE}/events/:index/image`, requireAuth, upload.single("image"), (req, res) => {
   const idx = Number(req.params.index);
   const eventsData = readJson(EVENTS_PATH);
-  if (!eventsData.events || !eventsData.events[idx]) return res.redirect(BASE);
+  if (!eventsData.events || !eventsData.events[idx]) return res.redirect(`${BASE}/etkinlikler`);
   if (req.file) {
     eventsData.events[idx].image = `/images/uploads/${req.file.filename}`;
     writeJson(EVENTS_PATH, eventsData);
   }
-  res.redirect(`${BASE}?saved=1`);
+  res.redirect(`${BASE}/etkinlikler?saved=1`);
 });
 
 app.post(`${BASE}/events/:index/delete`, requireAuth, (req, res) => {
@@ -378,11 +446,11 @@ app.post(`${BASE}/events/:index/delete`, requireAuth, (req, res) => {
     eventsData.events.splice(idx, 1);
     writeJson(EVENTS_PATH, eventsData);
   }
-  res.redirect(`${BASE}?saved=1`);
+  res.redirect(`${BASE}/etkinlikler?saved=1`);
 });
 
 app.post(`${BASE}/gallery`, requireAuth, upload.single("image"), (req, res) => {
-  if (!req.file) return res.redirect(BASE);
+  if (!req.file) return res.redirect(`${BASE}/galeri`);
   const galleryData = readJson(GALLERY_PATH);
   galleryData.images = galleryData.images || [];
   galleryData.images.push({
@@ -390,7 +458,7 @@ app.post(`${BASE}/gallery`, requireAuth, upload.single("image"), (req, res) => {
     caption: req.body.caption || "",
   });
   writeJson(GALLERY_PATH, galleryData);
-  res.redirect(`${BASE}?saved=1`);
+  res.redirect(`${BASE}/galeri?saved=1`);
 });
 
 app.post(`${BASE}/gallery/:index/delete`, requireAuth, (req, res) => {
@@ -400,7 +468,7 @@ app.post(`${BASE}/gallery/:index/delete`, requireAuth, (req, res) => {
     galleryData.images.splice(idx, 1);
     writeJson(GALLERY_PATH, galleryData);
   }
-  res.redirect(`${BASE}?saved=1`);
+  res.redirect(`${BASE}/galeri?saved=1`);
 });
 
 app.use((err, _req, res, _next) => {

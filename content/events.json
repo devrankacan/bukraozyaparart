@@ -1,6 +1,7 @@
 {
   "events": [
     {
+      "slug": "cini-tabak-boyama-workshop",
       "title": "Çini Tabak Boyama Workshop",
       "image": "/assets/placeholder-event.svg",
       "date": "2026-08-04",
@@ -13,6 +14,7 @@
       "whatsappMessage": ""
     },
     {
+      "slug": "limonlu-cini-workshopu",
       "title": "Limonlu Çini Workshopu",
       "image": "/assets/placeholder-event.svg",
       "date": "2026-08-18",
@@ -25,6 +27,7 @@
       "whatsappMessage": ""
     },
     {
+      "slug": "minyatur-ve-tezhip-atolyesi",
       "title": "Minyatür ve Tezhip Atölyesi",
       "image": "/assets/placeholder-event.svg",
       "date": "2026-09-05",
