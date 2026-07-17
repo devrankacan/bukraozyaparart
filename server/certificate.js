@@ -68,15 +68,9 @@ function streamCertificate({ name, eventTitle, eventDate, eventLocation, eventTi
 
     doc
       .font("Serif")
-      .fontSize(Math.round(height * 0.02))
-      .fillColor("#8a6520")
-      .text(`${brand.toUpperCase()} · ÇİNİ · TEZHİP · MİNYATÜR ATÖLYESİ`, 0, height * 0.085, { align: "center", width, characterSpacing: 1.5 });
-
-    doc
-      .font("Serif")
       .fontSize(Math.round(height * 0.044))
       .fillColor("#8a6520")
-      .text("KATILIM SERTİFİKASI", 0, height * 0.135, { align: "center", width, characterSpacing: 1 });
+      .text("KATILIM SERTİFİKASI", 0, height * 0.11, { align: "center", width, characterSpacing: 1 });
 
     const ruleY = height * 0.205;
     doc.moveTo(width * 0.42, ruleY).lineTo(width * 0.58, ruleY).lineWidth(1).stroke("#b8892f");
