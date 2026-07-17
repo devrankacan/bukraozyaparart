@@ -175,19 +175,25 @@ nginx -t
 systemctl reload nginx
 
 echo "== 8/8: HTTPS sertifikası (Let's Encrypt) ve nihai yapılandırma =="
-HAVE_CERT=0
 if certbot certonly --nginx -d "$DOMAIN" --non-interactive --agree-tos \
     -m "$LETSENCRYPT_EMAIL" --no-eff-email \
     --deploy-hook "systemctl reload nginx"; then
-  HAVE_CERT=1
+  echo "Sertifika alındı/yenilendi."
 else
-  echo "UYARI: Sertifika alınamadı. DNS kaydının (bukraozyaparart -> bu sunucunun IP'si)"
-  echo "yayılmış olduğundan emin olun ve script'i daha sonra tekrar çalıştırın."
-  echo "Site şimdilik düz HTTP üzerinden yayında kalacak."
+  echo "UYARI: Bu çalıştırmada sertifika alınamadı/yenilenemedi (geçici bir ağ sorunu"
+  echo "ya da hız sınırı olabilir). Diskte önceden alınmış geçerli bir sertifika varsa"
+  echo "yine de o kullanılacak; site HTTPS'siz kalmayacak."
 fi
 
+# HAVE_CERT, bu çalıştırmada certbot'un başarılı olup olmadığına değil,
+# diskte şu anda geçerli bir sertifika bulunup bulunmadığına bakar. Böylece
+# certbot'un tek seferlik/geçici bir hatası, önceden çalışan HTTPS + /admin
+# proxy yapılandırmasını asla düz HTTP'ye düşürmez (bu domain için 443
+# bloğu kaybolursa nginx isteği sunucudaki başka bir sitenin varsayılan
+# bloğuna yönlendirebilir).
 CERT_DIR="/etc/letsencrypt/live/$DOMAIN"
-if [ "$HAVE_CERT" -eq 1 ] && [ -f "$CERT_DIR/fullchain.pem" ]; then
+if [ -f "$CERT_DIR/fullchain.pem" ]; then
+  HAVE_CERT=1
   cat > "/etc/nginx/sites-available/bukuart" <<EOF
 server {
     listen 80;
@@ -225,6 +231,7 @@ EOF
   nginx -t
   systemctl reload nginx
 else
+  HAVE_CERT=0
   echo "Nginx yapılandırması HTTP olarak bırakıldı (sertifika yok); /admin proxy'si"
   echo "sertifika alınana kadar eklenmedi, script'i tekrar çalıştırınca eklenecek."
 fi
