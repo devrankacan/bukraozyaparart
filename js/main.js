@@ -142,7 +142,7 @@
       return;
     }
 
-    grid.innerHTML = images.slice(0, 9).map((img) => `
+    grid.innerHTML = images.map((img) => `
       <a href="${igUrl}" target="_blank" rel="noopener">
         <img src="${escapeHtml(img.image)}" alt="${escapeHtml(img.caption || "")}" loading="lazy">
       </a>
@@ -154,7 +154,10 @@
     const nav = $("#nav-links");
     if (!toggle || !nav) return;
     toggle.addEventListener("click", () => nav.classList.toggle("open"));
-    nav.querySelectorAll("a").forEach((a) => a.addEventListener("click", () => nav.classList.remove("open")));
+    nav.querySelectorAll("a").forEach((a) => {
+      a.addEventListener("click", () => nav.classList.remove("open"));
+      if (a.pathname === location.pathname) a.classList.add("active");
+    });
   }
 
   async function init() {
