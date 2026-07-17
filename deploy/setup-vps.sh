@@ -1,9 +1,10 @@
 #!/usr/bin/env bash
 # BÜKÜ ART sitesini VPS'e kurar: bukraozyaparart.taslak.site alan adına,
-# ücretsiz Let's Encrypt sertifikasıyla (HTTPS). Mevcut sitelere dokunmaz:
-# kendi dizinine, kendi nginx server block'larına ve kendi systemd
-# servisine kurulum yapar. Ubuntu/Debian tabanlı sunucular için
-# tasarlanmıştır. root olarak çalıştırın:
+# ücretsiz Let's Encrypt sertifikasıyla (HTTPS). Panel aynı alan adının
+# /admin yolunda çalışır (ayrı bir port numarası gerekmez). Mevcut
+# sitelere dokunmaz: kendi dizinine, kendi nginx server block'larına ve
+# kendi systemd servisine kurulum yapar. Ubuntu/Debian tabanlı sunucular
+# için tasarlanmıştır. root olarak çalıştırın:
 #   sudo bash setup-vps.sh
 set -euo pipefail
 
@@ -19,7 +20,7 @@ if [ "$(id -u)" -ne 0 ]; then
   exit 1
 fi
 
-echo "== 1/9: Gerekli paketler kontrol ediliyor =="
+echo "== 1/8: Gerekli paketler kontrol ediliyor =="
 apt-get update -qq
 apt-get install -y -qq git curl ca-certificates certbot python3-certbot-nginx >/dev/null
 
@@ -41,7 +42,7 @@ else
   echo "Node.js zaten kurulu: $(node -v)"
 fi
 
-echo "== 2/9: Panel portu belirleniyor =="
+echo "== 2/8: Dahili panel portu belirleniyor =="
 is_port_free() { ! ss -ltn 2>/dev/null | awk '{print $4}' | grep -qE "[:.]$1\$"; }
 
 find_free_port() {
@@ -52,33 +53,17 @@ find_free_port() {
   echo "$port"
 }
 
-# Site artık 80/443 üzerinden alan adıyla yayınlanıyor; sadece panelin
-# ayrı bir portu var. Daha önce kurulmuşsa aynı portu koru (80 ve 443
-# hariç ilk bulunan "listen" portu).
-NGINX_CONF_PATH="/etc/nginx/sites-available/bukuart"
 ENV_FILE="$SITE_DIR/server/.env"
 
-EXISTING_ADMIN_PORT=""
-if [ -f "$NGINX_CONF_PATH" ]; then
-  EXISTING_ADMIN_PORT=$(grep -oE '^[[:space:]]*listen [0-9]+' "$NGINX_CONF_PATH" \
-    | grep -oE '[0-9]+' | uniq | grep -vE '^(80|443)$' | head -1 || true)
-fi
-
-if [ -n "$EXISTING_ADMIN_PORT" ]; then
-  ADMIN_PORT="$EXISTING_ADMIN_PORT"
-  echo "Daha önce kurulmuş panel portu tekrar kullanılıyor: $ADMIN_PORT"
-else
-  ADMIN_PORT=$(find_free_port 8082)
-fi
-
-# Dahili Node portu her çalıştırmada yeniden bulunur; .env ve nginx'in
-# proxy_pass hedefi aşağıda her zaman birlikte, aynı değerle yazılır, bu
-# yüzden aralarında sürüm farkı/uyumsuzluk oluşamaz.
+# Panel artık ayrı bir dış port değil, aynı alan adının /admin yolu
+# üzerinden erişiliyor (nginx buradan dahili Node sürecine proxy yapar).
+# Bu dahili port her çalıştırmada yeniden bulunur; .env aşağıda her
+# zaman aynı değerle yeniden yazılır, bu yüzden nginx <-> Node arasında
+# sürüm farkı/uyumsuzluk oluşamaz.
 NODE_PORT=$(find_free_port 4001)
+echo "Dahili panel süreci: 127.0.0.1:$NODE_PORT (dışarıya kapalı, sadece nginx erişir)"
 
-echo "Panel portu: $ADMIN_PORT | Dahili panel süreci: 127.0.0.1:$NODE_PORT"
-
-echo "== 3/9: Site dosyaları çekiliyor =="
+echo "== 3/8: Site dosyaları çekiliyor =="
 # Önceki çalıştırmada $SITE_DIR www-data'ya devredildiği için root olarak
 # çalışan git burayı "güvensiz" sayıp işlemi reddedebilir; buna izin veriyoruz.
 git config --global --get-all safe.directory 2>/dev/null | grep -qxF "$SITE_DIR" \
@@ -103,11 +88,11 @@ else
 fi
 rm -rf "$CONTENT_BACKUP_DIR"
 
-echo "== 4/9: Panel bağımlılıkları kuruluyor =="
+echo "== 4/8: Panel bağımlılıkları kuruluyor =="
 cd "$SITE_DIR/server"
 npm install --omit=dev --silent
 
-echo "== 5/9: Panel giriş bilgileri =="
+echo "== 5/8: Panel giriş bilgileri =="
 if [ -f "$ENV_FILE" ]; then
   echo "Mevcut giriş bilgileri korunacak, port ayarları güncelleniyor."
   ADMIN_USERNAME=$(grep -oP '(?<=^ADMIN_USERNAME=).*' "$ENV_FILE")
@@ -141,7 +126,7 @@ SITE_URL=https://$DOMAIN/
 EOF
 chmod 600 "$ENV_FILE"
 
-echo "== 6/9: systemd servisi oluşturuluyor =="
+echo "== 6/8: systemd servisi oluşturuluyor =="
 cat > "/etc/systemd/system/${SERVICE_NAME}.service" <<EOF
 [Unit]
 Description=BÜKÜ ART yönetim paneli
@@ -165,10 +150,10 @@ systemctl daemon-reload
 systemctl enable "$SERVICE_NAME" >/dev/null
 systemctl restart "$SERVICE_NAME"
 
-echo "== 7/9: Nginx (geçici HTTP yapılandırması) =="
+echo "== 7/8: Nginx (geçici HTTP yapılandırması) =="
 # Let's Encrypt doğrulaması için önce düz HTTP üzerinden alan adına yanıt
 # verilmesi gerekiyor; sertifika alındıktan sonra bu dosyayı HTTPS'li
-# haliyle yeniden yazacağız.
+# haliyle (ve /admin proxy'siyle) yeniden yazacağız.
 cat > "/etc/nginx/sites-available/bukuart" <<EOF
 server {
     listen 80;
@@ -181,27 +166,13 @@ server {
         try_files \$uri \$uri/ =404;
     }
 }
-
-server {
-    listen $ADMIN_PORT;
-    listen [::]:$ADMIN_PORT;
-    server_name $DOMAIN;
-
-    location / {
-        proxy_pass http://127.0.0.1:$NODE_PORT;
-        proxy_set_header Host \$host;
-        proxy_set_header X-Real-IP \$remote_addr;
-        proxy_set_header X-Forwarded-For \$proxy_add_x_forwarded_for;
-        proxy_set_header X-Forwarded-Proto \$scheme;
-    }
-}
 EOF
 
 ln -sf /etc/nginx/sites-available/bukuart /etc/nginx/sites-enabled/bukuart
 nginx -t
 systemctl reload nginx
 
-echo "== 8/9: HTTPS sertifikası (Let's Encrypt) =="
+echo "== 8/8: HTTPS sertifikası (Let's Encrypt) ve nihai yapılandırma =="
 HAVE_CERT=0
 if certbot certonly --nginx -d "$DOMAIN" --non-interactive --agree-tos \
     -m "$LETSENCRYPT_EMAIL" --no-eff-email \
@@ -215,7 +186,6 @@ fi
 
 CERT_DIR="/etc/letsencrypt/live/$DOMAIN"
 if [ "$HAVE_CERT" -eq 1 ] && [ -f "$CERT_DIR/fullchain.pem" ]; then
-  echo "== 9/9: Nginx (HTTPS yapılandırması uygulanıyor) =="
   cat > "/etc/nginx/sites-available/bukuart" <<EOF
 server {
     listen 80;
@@ -235,44 +205,36 @@ server {
     ssl_certificate_key $CERT_DIR/privkey.pem;
     ssl_protocols TLSv1.2 TLSv1.3;
 
-    location / {
-        try_files \$uri \$uri/ =404;
-    }
-}
-
-server {
-    listen $ADMIN_PORT ssl;
-    listen [::]:$ADMIN_PORT ssl;
-    server_name $DOMAIN;
-
-    ssl_certificate $CERT_DIR/fullchain.pem;
-    ssl_certificate_key $CERT_DIR/privkey.pem;
-    ssl_protocols TLSv1.2 TLSv1.3;
-
-    location / {
+    # Yönetim paneli: aynı alan adı, /admin yolu -> dahili Node süreci.
+    location /admin {
         proxy_pass http://127.0.0.1:$NODE_PORT;
         proxy_set_header Host \$host;
         proxy_set_header X-Real-IP \$remote_addr;
         proxy_set_header X-Forwarded-For \$proxy_add_x_forwarded_for;
         proxy_set_header X-Forwarded-Proto \$scheme;
     }
+
+    # Sitenin geri kalanı: statik dosyalar.
+    location / {
+        try_files \$uri \$uri/ =404;
+    }
 }
 EOF
   nginx -t
   systemctl reload nginx
 else
-  echo "== 9/9: Nginx yapılandırması HTTP olarak bırakıldı (sertifika yok) =="
+  echo "Nginx yapılandırması HTTP olarak bırakıldı (sertifika yok); /admin proxy'si"
+  echo "sertifika alınana kadar eklenmedi, script'i tekrar çalıştırınca eklenecek."
 fi
 
 echo "== Güvenlik duvarı =="
 if command -v ufw >/dev/null 2>&1 && ufw status | grep -q "Status: active"; then
   ufw allow 80/tcp >/dev/null
   ufw allow 443/tcp >/dev/null
-  ufw allow "$ADMIN_PORT"/tcp >/dev/null
-  echo "ufw üzerinden 80, 443 ve $ADMIN_PORT portları açıldı."
+  echo "ufw üzerinden 80 ve 443 portları açıldı."
 else
-  echo "ufw aktif değil ya da kurulu değil; portları sağlayıcınızın (VPS panelinin)"
-  echo "güvenlik duvarından da açmanız gerekebilir (80, 443, $ADMIN_PORT)."
+  echo "ufw aktif değil ya da kurulu değil; 80 ve 443 portlarını sağlayıcınızın"
+  echo "(VPS panelinin) güvenlik duvarından da açmanız gerekebilir."
 fi
 
 echo ""
@@ -280,9 +242,9 @@ echo "======================================================"
 echo " Kurulum tamamlandı!"
 if [ "$HAVE_CERT" -eq 1 ]; then
   echo " Site   : https://$DOMAIN"
-  echo " Panel  : https://$DOMAIN:$ADMIN_PORT"
+  echo " Panel  : https://$DOMAIN/admin"
 else
   echo " Site   : http://$DOMAIN  (HTTPS henüz kurulamadı, yukarıdaki uyarıya bakın)"
-  echo " Panel  : http://$DOMAIN:$ADMIN_PORT"
+  echo " Panel  : sertifika alındıktan sonra https://$DOMAIN/admin"
 fi
 echo "======================================================"

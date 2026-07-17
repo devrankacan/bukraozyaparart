@@ -13,14 +13,14 @@ css/style.css           → Site teması
 js/main.js               → İçeriği JSON'dan okuyup sayfaya basan script
 content/settings.json   → Marka adı, slogan, WhatsApp numarası, Instagram, vb.
 content/events.json     → Etkinlik listesi
+content/gallery.json    → "Hakkımızda" bölümündeki galeri görselleri
 assets/                  → Logo ve dekoratif görseller
-images/uploads/          → Panelden yüklenen etkinlik görselleri buraya gelir
+images/uploads/          → Panelden yüklenen görseller buraya gelir
 server/                  → Yönetim paneli (Node.js + Express, şifre korumalı)
 deploy/setup-vps.sh      → VPS'e tek komutla kurulum script'i
-admin/                   → (Alternatif) Netlify üzerinde barındırma için Decap CMS paneli
 ```
 
-## 1. VPS'e Kurulum (önerilen yöntem)
+## 1. VPS'e Kurulum
 
 `deploy/setup-vps.sh` script'i, **Ubuntu/Debian tabanlı** bir VPS'te siteyi ve
 yönetim panelini `bukraozyaparart.taslak.site` alan adında, ücretsiz Let's
@@ -28,10 +28,11 @@ Encrypt sertifikasıyla (HTTPS) otomatik olarak kurar. Script şunları yapar:
 
 - Eksikse Nginx, Node.js ve certbot'u kurar (mevcut kuruluysa dokunmaz).
 - Bu deponun ilgili branch'ini `/var/www/bukuart` altına indirir.
-- Panel için **kullanılmayan bir port** seçer — sunucudaki diğer
-  sitelerin/portların hiçbirine dokunmaz. Site kendi alan adı üzerinden
-  standart 80/443 portlarını kullanır (nginx aynı sunucudaki diğer siteleri
-  `server_name` ile ayırt eder, çakışma olmaz).
+- Site standart 80/443 portlarında, panel ise **aynı alan adının `/admin`
+  yolunda** yayınlanır — ayrı bir port numarası hatırlamanıza gerek kalmaz
+  (nginx `/admin` isteklerini dahili bir Node sürecine yönlendirir, geri kalan
+  her şeyi statik dosya olarak sunar). Sunucudaki diğer sitelere/portlara
+  dokunulmaz.
 - Panel için kullanıcı adı/şifre belirlemenizi ister, güvenli bir oturum anahtarı
   üretir.
 - Paneli `systemd` servisi olarak kurar (sunucu yeniden başlasa da otomatik ayağa
@@ -59,15 +60,14 @@ Kurulum bitince ekranda şöyle bir özet göreceksiniz:
 
 ```
 Site   : https://bukraozyaparart.taslak.site
-Panel  : https://bukraozyaparart.taslak.site:8082
+Panel  : https://bukraozyaparart.taslak.site/admin
 ```
 
-Bu adresleri tarayıcınızda açarak siteyi ve panel giriş ekranını görebilirsiniz.
-
 > **Not:** DNS kaydı (`bukraozyaparart` → sunucunuzun IP'si) henüz yayılmamışsa
-> certbot sertifika alamaz; script bu durumda site/paneli geçici olarak düz
-> HTTP ile ayakta tutar ve uyarı basar. DNS yayıldıktan sonra script'i tekrar
-> çalıştırmanız yeterlidir.
+> certbot sertifika alamaz; script bu durumda siteyi geçici olarak düz HTTP ile
+> ayakta tutar ve `/admin` proxy'sini henüz eklemez (sertifikasız panel şifre
+> trafiğini şifrelenmemiş göndermemek için). DNS yayıldıktan sonra script'i
+> tekrar çalıştırmanız yeterli, panel de o zaman eklenir.
 
 ### Script'i tekrar çalıştırma (güncelleme)
 
@@ -81,16 +81,26 @@ sudo bash /tmp/bukuart-setup/deploy/setup-vps.sh
 
 ## 2. Panel Kullanımı
 
-`https://bukraozyaparart.taslak.site:PANEL_PORTU` adresine gidip
-belirlediğiniz kullanıcı adı/şifre ile giriş yapın. Panelden:
+**`https://bukraozyaparart.taslak.site/admin`** adresine gidip belirlediğiniz
+kullanıcı adı/şifre ile giriş yapın. Panelden:
 
 - Marka adı, slogan, hakkımızda metni, **WhatsApp numarası**, Instagram
   kullanıcı adı gibi genel ayarları güncelleyebilirsiniz.
 - Etkinlik ekleyebilir, düzenleyebilir, görsel yükleyebilir, silebilir veya
   "Sitede Göster" kutusunu kapatarak yayından geçici olarak kaldırabilirsiniz.
+- "Hakkımızda" bölümündeki galeriye fotoğraf ekleyip silebilirsiniz.
 
 Değişiklikler kaydedildiği anda ana sitede görünür — ayrıca bir yayınlama/build
 adımı gerekmez.
+
+Şifrenizi unutursanız, VPS'te şunu çalıştırarak sıfırlayabilirsiniz:
+
+```bash
+cd /var/www/bukuart/server
+NEW_HASH=$(node -e "console.log(require('bcryptjs').hashSync('YENI_SIFRENIZ', 10))")
+sed -i "s|^ADMIN_PASSWORD_HASH=.*|ADMIN_PASSWORD_HASH=$NEW_HASH|" .env
+sudo systemctl restart bukuart-admin
+```
 
 ## 3. WhatsApp Numarasını Ayarlama
 
@@ -104,17 +114,17 @@ Kurulumda `content/settings.json` içinde **placeholder** bir numara bulunur
 ## 4. Etkinlik Ekleme / Düzenleme
 
 Panelde "Yeni Etkinlik Ekle" formunu kullanın veya mevcut bir etkinliğin
-altındaki formdan düzenleyin. Her etkinlik kartındaki "WhatsApp ile
-Rezervasyon Yap" butonu, etkinliğin başlığı ve tarihiyle otomatik doldurulmuş
-bir WhatsApp mesajı açar; isterseniz "Özel WhatsApp Mesajı" alanına kendi
-metninizi yazabilirsiniz.
+altındaki formdan düzenleyin. Her etkinlik kartındaki "Rezervasyon Oluştur"
+butonu, etkinliğin başlığı ve tarihiyle otomatik doldurulmuş bir WhatsApp
+mesajı açar; isterseniz "Özel WhatsApp Mesajı" alanına kendi metninizi
+yazabilirsiniz.
 
 ## 5. Görselleri Değiştirme
 
-- Instagram gönderilerinizdeki gerçek fotoğrafları kullanmak için panelden
-  ilgili etkinliğin "Görsel Değiştir" formuyla yükleyebilirsiniz.
-- `assets/` klasöründeki logo ve dekoratif çini/tabak illüstrasyonları kendi
-  tasarımlarınızla değiştirilebilir (aynı dosya adlarını koruyarak, sunucuda
+- Etkinlik veya galeri görsellerini panelden ilgili "Görsel" yükleme
+  formuyla ekleyebilir/değiştirebilirsiniz.
+- `assets/` klasöründeki logo ve dekoratif görseller kendi tasarımlarınızla
+  değiştirilebilir (aynı dosya adlarını koruyarak, sunucuda
   `/var/www/bukuart/assets/` altında).
 
 ## 6. Alan Adı ve HTTPS
@@ -141,20 +151,3 @@ python3 -m http.server 8080
 
 Sonra `http://localhost:8080` adresini açın (panel olmadan, sadece statik
 siteyi görürsünüz).
-
-## Alternatif: Netlify + Decap CMS
-
-VPS yerine Netlify gibi bir statik hosting tercih ederseniz, `admin/` klasörü
-altında Decap CMS tabanlı alternatif bir panel de mevcuttur (Netlify Identity +
-Git Gateway gerektirir, VPS kurulumunda kullanılmaz):
-
-1. [netlify.com](https://netlify.com) üzerinde ücretsiz bir hesap açın.
-2. "Add new site" → "Import an existing project" → GitHub'ı seçip bu depoyu
-   (`devrankacan/bukraozyaparart`) bağlayın.
-3. **Site configuration → Identity** → "Enable Identity".
-4. **Identity → Registration** → "Invite only".
-5. **Identity → Services → Git Gateway** → "Enable Git Gateway".
-6. **Identity → Invite users** ile kendi e-postanızı davet edin.
-7. `admin/config.yml` içindeki `branch:` değerinin Netlify'da yayınladığınız
-   branch adıyla aynı olduğundan emin olun.
-8. `https://siteniz.netlify.app/admin/` adresinden giriş yapın.

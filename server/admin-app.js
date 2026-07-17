@@ -16,6 +16,7 @@ const SITE_URL = process.env.SITE_URL || "/";
 const ADMIN_USERNAME = process.env.ADMIN_USERNAME;
 const ADMIN_PASSWORD_HASH = process.env.ADMIN_PASSWORD_HASH;
 const SESSION_SECRET = process.env.SESSION_SECRET;
+const BASE = "/admin";
 
 if (!ADMIN_USERNAME || !ADMIN_PASSWORD_HASH || !SESSION_SECRET) {
   console.error("ADMIN_USERNAME, ADMIN_PASSWORD_HASH ve SESSION_SECRET .env içinde tanımlı olmalı.");
@@ -32,8 +33,9 @@ fs.mkdirSync(UPLOAD_DIR, { recursive: true });
 const app = express();
 app.set("trust proxy", 1);
 app.use(express.urlencoded({ extended: true }));
-app.use("/assets", express.static(path.join(__dirname, "..", "assets")));
-app.use("/images/uploads", express.static(UPLOAD_DIR));
+
+// Statik varlıklar (/assets, /images/uploads) bu uygulamaya hiç gelmez;
+// nginx bunları /admin dışındaki her şey gibi doğrudan siteden sunar.
 
 app.use(session({
   secret: SESSION_SECRET,
@@ -134,10 +136,10 @@ ${body}
 
 function requireAuth(req, res, next) {
   if (req.session && req.session.authed) return next();
-  res.redirect("/login");
+  res.redirect(`${BASE}/login`);
 }
 
-app.get("/login", (req, res) => {
+app.get(`${BASE}/login`, (req, res) => {
   const error = req.query.error ? `<div class="flash" style="background:#2c1c1c;border-color:#6b3a3a;color:#e6bfbf;">Kullanıcı adı veya şifre hatalı.</div>` : "";
   res.send(layout("Giriş", `
     <div class="panel-logo-row">
@@ -145,7 +147,7 @@ app.get("/login", (req, res) => {
     </div>
     <div class="card" style="max-width:360px;margin:24px auto 0;">
       ${error}
-      <form method="POST" action="/login">
+      <form method="POST" action="${BASE}/login">
         <label for="username">Kullanıcı Adı</label>
         <input type="text" id="username" name="username" required autofocus>
         <label for="password">Şifre</label>
@@ -156,22 +158,22 @@ app.get("/login", (req, res) => {
   `));
 });
 
-app.post("/login", loginLimiter, (req, res) => {
+app.post(`${BASE}/login`, loginLimiter, (req, res) => {
   const { username, password } = req.body;
   const validUser = username === ADMIN_USERNAME;
   const validPass = validUser && bcrypt.compareSync(password || "", ADMIN_PASSWORD_HASH);
   if (validUser && validPass) {
     req.session.authed = true;
-    return res.redirect("/");
+    return res.redirect(BASE);
   }
-  res.redirect("/login?error=1");
+  res.redirect(`${BASE}/login?error=1`);
 });
 
-app.post("/logout", (req, res) => {
-  req.session.destroy(() => res.redirect("/login"));
+app.post(`${BASE}/logout`, (req, res) => {
+  req.session.destroy(() => res.redirect(`${BASE}/login`));
 });
 
-app.get("/", requireAuth, (req, res) => {
+app.get(BASE, requireAuth, (req, res) => {
   const settings = readJson(SETTINGS_PATH);
   const eventsData = readJson(EVENTS_PATH);
   const galleryData = readJson(GALLERY_PATH);
@@ -179,7 +181,7 @@ app.get("/", requireAuth, (req, res) => {
 
   const eventsHtml = (eventsData.events || []).map((ev, i) => `
     <div class="event-item">
-      <form method="POST" action="/events/${i}">
+      <form method="POST" action="${BASE}/events/${i}">
         <div class="row">
           <div><label>Başlık</label><input type="text" name="title" value="${escapeHtml(ev.title)}" required></div>
           <div><label>Tarih</label><input type="date" name="date" value="${escapeHtml(ev.date)}" required></div>
@@ -201,12 +203,12 @@ app.get("/", requireAuth, (req, res) => {
         <div class="checkbox"><input type="checkbox" name="active" id="active-${i}" ${ev.active !== false ? "checked" : ""}><label for="active-${i}" style="margin:0;">Sitede göster (aktif)</label></div>
         <button type="submit">Kaydet</button>
       </form>
-      <form method="POST" action="/events/${i}/image" enctype="multipart/form-data" style="margin-top:10px;">
+      <form method="POST" action="${BASE}/events/${i}/image" enctype="multipart/form-data" style="margin-top:10px;">
         <label>Görsel Değiştir</label>
         <input type="file" name="image" accept="image/*">
         <button type="submit">Görseli Yükle</button>
       </form>
-      <form method="POST" action="/events/${i}/delete" style="margin-top:6px;" onsubmit="return confirm('Bu etkinliği silmek istediğinize emin misiniz?');">
+      <form method="POST" action="${BASE}/events/${i}/delete" style="margin-top:6px;" onsubmit="return confirm('Bu etkinliği silmek istediğinize emin misiniz?');">
         <button type="submit" class="danger">Etkinliği Sil</button>
       </form>
     </div>
@@ -215,7 +217,7 @@ app.get("/", requireAuth, (req, res) => {
   const galleryHtml = (galleryData.images || []).map((img, i) => `
     <div class="gallery-item-admin">
       <img src="${escapeHtml(img.image)}" alt="${escapeHtml(img.caption || "")}">
-      <form method="POST" action="/gallery/${i}/delete" onsubmit="return confirm('Bu görseli silmek istediğinize emin misiniz?');">
+      <form method="POST" action="${BASE}/gallery/${i}/delete" onsubmit="return confirm('Bu görseli silmek istediğinize emin misiniz?');">
         <button type="submit" class="danger">Sil</button>
       </form>
     </div>
@@ -227,14 +229,14 @@ app.get("/", requireAuth, (req, res) => {
       <div>
         <a class="site-link" href="${escapeHtml(SITE_URL)}" target="_blank">Siteyi Görüntüle ↗</a>
         &nbsp;·&nbsp;
-        <form method="POST" action="/logout" style="display:inline;"><button type="submit" style="margin:0;padding:6px 16px;">Çıkış</button></form>
+        <form method="POST" action="${BASE}/logout" style="display:inline;"><button type="submit" style="margin:0;padding:6px 16px;">Çıkış</button></form>
       </div>
     </div>
     ${saved}
 
     <div class="card">
       <h2>Site Ayarları</h2>
-      <form method="POST" action="/settings">
+      <form method="POST" action="${BASE}/settings">
         <div class="row">
           <div><label>Marka Adı</label><input type="text" name="brandName" value="${escapeHtml(settings.brandName)}"></div>
           <div><label>WhatsApp Numarası</label><input type="text" name="whatsapp" value="${escapeHtml(settings.whatsapp)}" placeholder="905XXXXXXXXX"></div>
@@ -263,7 +265,7 @@ app.get("/", requireAuth, (req, res) => {
     <div class="card">
       <h2>Galeri (Anasayfa "Hakkımızda" Bölümü)</h2>
       <div class="gallery-grid-admin">${galleryHtml}</div>
-      <form method="POST" action="/gallery" enctype="multipart/form-data" style="margin-top:20px;">
+      <form method="POST" action="${BASE}/gallery" enctype="multipart/form-data" style="margin-top:20px;">
         <label>Yeni Görsel</label>
         <input type="file" name="image" accept="image/*" required>
         <label>Açıklama (opsiyonel, alt metin olarak kullanılır)</label>
@@ -274,7 +276,7 @@ app.get("/", requireAuth, (req, res) => {
 
     <div class="card">
       <h2>Yeni Etkinlik Ekle</h2>
-      <form method="POST" action="/events">
+      <form method="POST" action="${BASE}/events">
         <div class="row">
           <div><label>Başlık</label><input type="text" name="title" required></div>
           <div><label>Tarih</label><input type="date" name="date" required></div>
@@ -297,7 +299,7 @@ app.get("/", requireAuth, (req, res) => {
   `));
 });
 
-app.post("/settings", requireAuth, (req, res) => {
+app.post(`${BASE}/settings`, requireAuth, (req, res) => {
   const current = readJson(SETTINGS_PATH);
   const updated = {
     ...current,
@@ -311,10 +313,10 @@ app.post("/settings", requireAuth, (req, res) => {
     footerNote: req.body.footerNote || "",
   };
   writeJson(SETTINGS_PATH, updated);
-  res.redirect("/?saved=1");
+  res.redirect(`${BASE}?saved=1`);
 });
 
-app.post("/events", requireAuth, upload.single("image"), (req, res) => {
+app.post(`${BASE}/events`, requireAuth, upload.single("image"), (req, res) => {
   const eventsData = readJson(EVENTS_PATH);
   const image = req.file ? `/images/uploads/${req.file.filename}` : "/assets/placeholder-event.svg";
   eventsData.events = eventsData.events || [];
@@ -331,13 +333,13 @@ app.post("/events", requireAuth, upload.single("image"), (req, res) => {
     whatsappMessage: "",
   });
   writeJson(EVENTS_PATH, eventsData);
-  res.redirect("/?saved=1");
+  res.redirect(`${BASE}?saved=1`);
 });
 
-app.post("/events/:index", requireAuth, (req, res) => {
+app.post(`${BASE}/events/:index`, requireAuth, (req, res) => {
   const idx = Number(req.params.index);
   const eventsData = readJson(EVENTS_PATH);
-  if (!eventsData.events || !eventsData.events[idx]) return res.redirect("/");
+  if (!eventsData.events || !eventsData.events[idx]) return res.redirect(BASE);
   eventsData.events[idx] = {
     ...eventsData.events[idx],
     title: req.body.title || "",
@@ -351,32 +353,32 @@ app.post("/events/:index", requireAuth, (req, res) => {
     active: req.body.active === "on",
   };
   writeJson(EVENTS_PATH, eventsData);
-  res.redirect("/?saved=1");
+  res.redirect(`${BASE}?saved=1`);
 });
 
-app.post("/events/:index/image", requireAuth, upload.single("image"), (req, res) => {
+app.post(`${BASE}/events/:index/image`, requireAuth, upload.single("image"), (req, res) => {
   const idx = Number(req.params.index);
   const eventsData = readJson(EVENTS_PATH);
-  if (!eventsData.events || !eventsData.events[idx]) return res.redirect("/");
+  if (!eventsData.events || !eventsData.events[idx]) return res.redirect(BASE);
   if (req.file) {
     eventsData.events[idx].image = `/images/uploads/${req.file.filename}`;
     writeJson(EVENTS_PATH, eventsData);
   }
-  res.redirect("/?saved=1");
+  res.redirect(`${BASE}?saved=1`);
 });
 
-app.post("/events/:index/delete", requireAuth, (req, res) => {
+app.post(`${BASE}/events/:index/delete`, requireAuth, (req, res) => {
   const idx = Number(req.params.index);
   const eventsData = readJson(EVENTS_PATH);
   if (eventsData.events && eventsData.events[idx]) {
     eventsData.events.splice(idx, 1);
     writeJson(EVENTS_PATH, eventsData);
   }
-  res.redirect("/?saved=1");
+  res.redirect(`${BASE}?saved=1`);
 });
 
-app.post("/gallery", requireAuth, upload.single("image"), (req, res) => {
-  if (!req.file) return res.redirect("/");
+app.post(`${BASE}/gallery`, requireAuth, upload.single("image"), (req, res) => {
+  if (!req.file) return res.redirect(BASE);
   const galleryData = readJson(GALLERY_PATH);
   galleryData.images = galleryData.images || [];
   galleryData.images.push({
@@ -384,24 +386,24 @@ app.post("/gallery", requireAuth, upload.single("image"), (req, res) => {
     caption: req.body.caption || "",
   });
   writeJson(GALLERY_PATH, galleryData);
-  res.redirect("/?saved=1");
+  res.redirect(`${BASE}?saved=1`);
 });
 
-app.post("/gallery/:index/delete", requireAuth, (req, res) => {
+app.post(`${BASE}/gallery/:index/delete`, requireAuth, (req, res) => {
   const idx = Number(req.params.index);
   const galleryData = readJson(GALLERY_PATH);
   if (galleryData.images && galleryData.images[idx]) {
     galleryData.images.splice(idx, 1);
     writeJson(GALLERY_PATH, galleryData);
   }
-  res.redirect("/?saved=1");
+  res.redirect(`${BASE}?saved=1`);
 });
 
 app.use((err, _req, res, _next) => {
   console.error(err);
-  res.status(400).send(layout("Hata", `<div class="flash" style="background:#2c1c1c;border-color:#6b3a3a;color:#e6bfbf;">${escapeHtml(err.message)}</div><a class="btn" href="/">Geri Dön</a>`));
+  res.status(400).send(layout("Hata", `<div class="flash" style="background:#2c1c1c;border-color:#6b3a3a;color:#e6bfbf;">${escapeHtml(err.message)}</div><a class="btn" href="${BASE}">Geri Dön</a>`));
 });
 
 app.listen(PORT, "127.0.0.1", () => {
-  console.log(`Admin panel 127.0.0.1:${PORT} adresinde çalışıyor.`);
+  console.log(`Admin panel 127.0.0.1:${PORT} adresinde (nginx üzerinden ${BASE}) çalışıyor.`);
 });
