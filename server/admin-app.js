@@ -89,17 +89,21 @@ function layout(title, body) {
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>${escapeHtml(title)} | BÜKÜ ART Panel</title>
 <style>
-  :root { --bg:#0b0d12; --card:#151922; --border:rgba(201,151,31,.3); --gold:#c9971f; --gold-l:#e8c96b; --text:#eee6d6; --muted:#a9a6a0; }
+  :root {
+    --bg:#faf6ec; --bg-alt:#f1e7d3; --card:#fffdf8; --border:rgba(31,58,95,.14);
+    --border-gold:rgba(184,137,47,.35); --navy:#1f3a5f; --navy-deep:#142a45;
+    --gold:#b8892f; --gold-deep:#8a6520; --text:#2c2a24; --muted:#6f6a5c;
+  }
   * { box-sizing: border-box; }
   body { margin:0; background:var(--bg); color:var(--text); font-family: system-ui, -apple-system, sans-serif; line-height:1.55; }
   .wrap { max-width: 920px; margin: 0 auto; padding: 32px 20px 80px; }
-  h1 { font-size: 1.4rem; color: var(--gold-l); }
-  h2 { font-size: 1.1rem; color: var(--gold-l); border-bottom: 1px solid var(--border); padding-bottom: 8px; }
-  .card { background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 24px; margin-bottom: 24px; }
+  h1 { font-size: 1.4rem; color: var(--navy); }
+  h2 { font-family: Georgia, serif; font-size: 1.1rem; color: var(--navy); border-bottom: 1px solid var(--border); padding-bottom: 8px; }
+  .card { background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 24px; margin-bottom: 24px; box-shadow: 0 10px 30px rgba(31,42,58,.06); }
   label { display:block; font-size: .82rem; color: var(--muted); margin: 12px 0 4px; }
   input[type=text], input[type=password], input[type=date], textarea, input[type=file] {
     width: 100%; padding: 10px 12px; border-radius: 8px; border: 1px solid var(--border);
-    background: #0e1119; color: var(--text); font-size: .92rem; font-family: inherit;
+    background: var(--bg); color: var(--text); font-size: .92rem; font-family: inherit;
   }
   textarea { min-height: 70px; resize: vertical; }
   .row { display: flex; gap: 16px; flex-wrap: wrap; }
@@ -107,7 +111,7 @@ function layout(title, body) {
   .checkbox { display:flex; align-items:center; gap:8px; margin-top:14px; }
   .checkbox input { width:auto; }
   button, .btn { display:inline-block; margin-top:16px; padding: 10px 22px; border-radius: 999px; border:none;
-    background: linear-gradient(135deg, var(--gold-l), var(--gold)); color:#1a1305; font-weight:600; cursor:pointer; font-size:.9rem; text-decoration:none; }
+    background: var(--navy); color: var(--bg); font-weight:600; cursor:pointer; font-size:.9rem; text-decoration:none; }
   button.danger { background: #b6435a; color:#fff; }
   .event-item { border-top: 1px solid var(--border); padding-top: 18px; margin-top: 18px; }
   .event-item:first-of-type { border-top:none; padding-top:0; margin-top:0; }
@@ -117,8 +121,8 @@ function layout(title, body) {
   .gallery-item-admin form { margin-top:6px; }
   .gallery-item-admin button { margin-top:6px; padding:6px 14px; font-size:.78rem; width:100%; }
   .top-bar { display:flex; justify-content:space-between; align-items:center; margin-bottom:24px; }
-  .top-bar a { color: var(--gold); font-size:.85rem; }
-  .flash { background:#1c2c1c; border:1px solid #3a6b3a; color:#bfe6bf; padding:10px 16px; border-radius:8px; margin-bottom:20px; font-size:.9rem; }
+  .top-bar a { color: var(--gold-deep); font-size:.85rem; }
+  .flash { background:#eaf3e6; border:1px solid #9dc98d; color:#2f5b26; padding:10px 16px; border-radius:8px; margin-bottom:20px; font-size:.9rem; }
   .thumb { max-width: 120px; border-radius: 6px; border:1px solid var(--border); display:block; margin-top:8px; }
   .site-link { font-size:.82rem; color: var(--muted); }
   .panel-logo { display:block; height: 96px; width:auto; margin: 0 auto; }
